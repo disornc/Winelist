@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Soul Wines — Wine List</title>
+<title>Grapey Winelist</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --cream: #F7F2EA;
-  --cream-dark: #EDE6D9;
+  --cream: #F0EBF8;
+  --cream-dark: #E0D4F0;
   --ink: #1C1A17;
   --ink-soft: #4A4640;
   --ink-muted: #8C867E;
@@ -392,7 +392,7 @@ header {
 <body>
 
 <header>
-  <div class="logo">Soul <em>Wines</em></div>
+  <div class="logo">Grapey <em>Winelist</em></div>
   <div class="header-count" id="count"></div>
 </header>
 
@@ -444,18 +444,72 @@ header {
 
 <script>
 const wines = [
-  { name: "Brutal Orange", producer: "Matassa", type: "orange", year: "2024", size: "75cl", abv: "10%", region: "Languedoc-Roussillon", grapes: "Grenache Gris, Macabeu", price: 1890, desc: "Skin-contact orange with vivid apricot and dried citrus notes. Earthy texture, low intervention, lively finish." },
-  { name: "Cuvee Alexandria", producer: "Matassa", type: "orange", year: "2024", size: "75cl", abv: "10.5%", region: "Côtes Catalanes", grapes: "Muscat d'Alexandrie", price: 1590, desc: "Floral and aromatic with rose petal and peach. Gentle tannins from short skin maceration." },
-  { name: "El Carner", producer: "Matassa", type: "red", year: "2024", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "Grenache Gris, Macabeu", price: 1490, desc: "Light-bodied red with bright red fruit, fresh herbs, and a clean mineral finish. Chillable and versatile." },
-  { name: "El Carner", producer: "Matassa", type: "red", year: "2023", size: "75cl", abv: "10.5%", region: "Côtes Catalanes", grapes: "Grenache Gris, Macabeu", price: 1690, desc: "Previous vintage showing more depth and earthy complexity. Silky tannins, lingering finish." },
-  { name: "French Disko", producer: "Matassa", type: "red", year: "2023", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "Carignan", price: 2190, desc: "Old-vine Carignan with dark cherry, iron, and garrigue. Robust yet fresh — a crowd favourite." },
-  { name: "Olla Rouge", producer: "Matassa", type: "red", year: "2024", size: "75cl", abv: "10%", region: "Languedoc-Roussillon", grapes: "Grenache, Carignan", price: 1290, desc: "Juicy and easy-going. Plum, raspberry, and a hint of spice. Great for the table." },
-  { name: "Rufo", producer: "Matassa", type: "white", year: "2024", size: "75cl", abv: "10.5%", region: "Languedoc-Roussillon", grapes: "Macabeu", price: 1490, desc: "Crisp, stony white with green apple, white flowers, and a saline mineral edge. Pure and elegant." },
-  { name: "Tattouine", producer: "Matassa", type: "red", year: "2024", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "90% Grenache Gris, 10% Grenache Noir", price: 1590, desc: "Pale red with strawberry and watermelon. Light, joyful, and incredibly easy to drink." },
-  { name: "Tattouine Rouge", producer: "Matassa", type: "red", year: "2023", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "90% Grenache Gris, 10% Grenache Noir", price: 1586, desc: "Aged version with more structure. Red berries, dried flowers, long finish." },
-  { name: "Petite Étoile", producer: "Domaine Vinci", type: "sparkling", year: "NV", size: "75cl", abv: "11%", region: "Limoux", grapes: "Mauzac, Chardonnay", price: 1850, desc: "Méthode ancestrale with fine bubbles, green apple, almond, and a playful effervescence." },
-  { name: "Blanc de Blancs", producer: "Château Rives-Blanques", type: "sparkling", year: "2022", size: "75cl", abv: "12%", region: "Crémant de Limoux", grapes: "Chardonnay", price: 2100, desc: "Classic crémant with brioche, citrus zest, and elegant mousse. Ideal as an aperitif." },
-  { name: "La Lune", producer: "Jo Landron", type: "white", year: "2023", size: "75cl", abv: "12%", region: "Muscadet", grapes: "Melon de Bourgogne", price: 1750, desc: "Sur lie Muscadet with oyster shell, lemon, and a creamy texture. Benchmark style." },
+  // SPARKLING
+  { name: "Petillant Naturel", producer: "Dexheimer", type: "sparkling", year: "2024", size: "75cl", abv: "", region: "", grapes: "Riesling", price: null },
+  { name: "Heng Heng Heng", producer: "Tipsy Tickles", type: "sparkling", year: "2026", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  { name: "Hello Welcome", producer: "Tipsy Tickles", type: "sparkling", year: "2025", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  { name: "Stupid Cupid", producer: "Tipsy Tickles", type: "sparkling", year: "2025", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  { name: "Little Trouble", producer: "Tipsy Tickles", type: "sparkling", year: "2025", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  { name: "Kiddo Skins", producer: "Milan Nestarec", type: "sparkling", year: "2024", size: "75cl", abv: "", region: "", grapes: "Pinot Gris", price: null },
+  { name: "Pash Rash", producer: "Borachio", type: "sparkling", year: "2022", size: "75cl", abv: "", region: "", grapes: "Chardonnay, SV, PG", price: null },
+  { name: "Funambule", producer: "Chateau Lafitte", type: "sparkling", year: "2023", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  // ORANGE
+  { name: "Sipon Amfora", producer: "Matic Wines", type: "orange", year: "2023", size: "75cl", abv: "", region: "", grapes: "Sipon, Furmint", price: 1750 },
+  { name: "Metamorphika Macabeu Orange", producer: "Costador", type: "orange", year: "2024", size: "75cl", abv: "", region: "", grapes: "Macabeu", price: null },
+  { name: "Foresta", producer: "Gismondi", type: "orange", year: "2023", size: "75cl", abv: "", region: "", grapes: "Malvasia, Trebbiano Rosa", price: 1850 },
+  { name: "Ivre de Vivre", producer: "l'Octavin", type: "orange", year: "2022", size: "75cl", abv: "", region: "", grapes: "Vermentino", price: 2150 },
+  { name: "Nerthus", producer: "Kelley Fox Wines", type: "orange", year: "2021", size: "75cl", abv: "", region: "", grapes: "Muscat, PG, PB, Riesling", price: null },
+  { name: "Gewurz Krub Miner", producer: "Les Vins Pirouettes", type: "orange", year: "2019", size: "75cl", abv: "", region: "", grapes: "Gewurztraminer", price: null },
+  { name: "I Vicini Moscato", producer: "Jean-Yves Peron", type: "orange", year: "2021", size: "75cl", abv: "", region: "", grapes: "Muscat", price: null },
+  { name: "Doma", producer: "Noboso", type: "orange", year: "2022", size: "75cl", abv: "", region: "", grapes: "Riesling, PG, Weissburgunder", price: null },
+  { name: "Gluck", producer: "Werlitsch", type: "orange", year: "2022", size: "75cl", abv: "", region: "", grapes: "Sauvignon Blanc", price: 2550 },
+  { name: "Ageno", producer: "La Stoppa", type: "orange", year: "2020", size: "75cl", abv: "", region: "", grapes: "Malvasia, Ortrugo, Trebbiano", price: 2550 },
+  { name: "Gewurztraminer Alsace Grand Cru 'Eichberg'", producer: "Pierre Frick", type: "orange", year: "2022", size: "75cl", abv: "", region: "Alsace", grapes: "Gewurztraminer", price: 2550 },
+  { name: "Pinot Gris", producer: "Pierre Frick", type: "orange", year: "2022", size: "75cl", abv: "", region: "Alsace", grapes: "Pinot Gris", price: 2550 },
+  { name: "Il Roccolo di Monticelli", producer: "Il Roccolo di Monticelli", type: "orange", year: "NV", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  { name: "Orange", producer: "Pepin", type: "orange", year: "NV", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  // WHITE
+  { name: "Metamorphika Viognier", producer: "Costador", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "Viognier", price: 2050 },
+  { name: "Theodora Weiss", producer: "Gut Oggau", type: "white", year: "2024", size: "75cl", abv: "", region: "", grapes: "Grüner Veltliner, Welschriesling", price: 2450 },
+  { name: "Ex Vero I", producer: "Werlitsch", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "Chardonnay, SB", price: 2350 },
+  { name: "Cerreto", producer: "Gismondi", type: "white", year: "2023", size: "75cl", abv: "", region: "", grapes: "Malvasia", price: 1850 },
+  { name: "Le P'Tit Blanc", producer: "Les Sablonnettes", type: "white", year: "2024", size: "75cl", abv: "", region: "", grapes: "Chenin Blanc", price: 1750 },
+  { name: "Rosacker Riesling", producer: "Julien Schaal", type: "white", year: "2024", size: "75cl", abv: "", region: "Alsace", grapes: "Riesling", price: null },
+  { name: "Gewurztraminer", producer: "Sophie Schaal", type: "white", year: "2023", size: "75cl", abv: "", region: "Alsace", grapes: "Gewurztraminer", price: 1850 },
+  { name: "Keknyelu", producer: "Bencze", type: "white", year: "2021", size: "75cl", abv: "", region: "", grapes: "Kéknyelu", price: 2550 },
+  { name: "Pinot Gris", producer: "Bencze", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "Pinot Gris", price: 2350 },
+  { name: "Chenin Blanc", producer: "Bencze", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "Chenin Blanc", price: 2550 },
+  { name: "La Rumbera", producer: "Oriol Artigas", type: "white", year: "2021", size: "75cl", abv: "", region: "", grapes: "Xarel·lo", price: 1750 },
+  { name: "Albarino", producer: "Brij Wines", type: "white", year: "2023", size: "75cl", abv: "", region: "", grapes: "Albariño", price: 2150 },
+  { name: "Colombard", producer: "Vinde Frantz", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "Colombard", price: 1950 },
+  { name: "Umami", producer: "Milan Nestarec", type: "white", year: "2021", size: "75cl", abv: "", region: "", grapes: "Traminer", price: null },
+  { name: "Chardonnay", producer: "Patrick Sullivan", type: "white", year: "2024", size: "75cl", abv: "", region: "", grapes: "Chardonnay", price: null },
+  { name: "Schist Happens", producer: "Michi Lorenz", type: "white", year: "2023", size: "75cl", abv: "", region: "", grapes: "Chardonnay", price: null },
+  { name: "Bourgogne Aligote", producer: "Maxime Crotet", type: "white", year: "2023", size: "75cl", abv: "", region: "Bourgogne", grapes: "Aligoté", price: 2150 },
+  { name: "Beaujolais Blanc", producer: "Anthony Thevenet", type: "white", year: "2023", size: "75cl", abv: "", region: "Beaujolais", grapes: "Chardonnay", price: null },
+  { name: "Bianco", producer: "Cambridge Road", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "Chardonnay, PG, SV", price: 1850 },
+  { name: "Curtimenta", producer: "IG Lisboa", type: "white", year: "2023", size: "75cl", abv: "", region: "Lisboa", grapes: "Pinot Gris", price: 2250 },
+  { name: "Mademoiselle M", producer: "Alexandre Bain", type: "white", year: "2020", size: "75cl", abv: "", region: "Loire", grapes: "Sauvignon Blanc", price: null },
+  { name: "Pierre Precieuse", producer: "Alexandre Bain", type: "white", year: "2019", size: "75cl", abv: "", region: "Loire", grapes: "Sauvignon Blanc", price: null },
+  { name: "Argile", producer: "Chateau Lafitte", type: "white", year: "2022", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  { name: "Sec", producer: "Chateau Lafitte", type: "white", year: "2024", size: "75cl", abv: "", region: "", grapes: "", price: null },
+  // RED
+  { name: "CL 23", producer: "Partida Creus", type: "red", year: "2023", size: "75cl", abv: "", region: "", grapes: "Grenache", price: null },
+  { name: "Concerto di Venezia", producer: "L'opera des vin", type: "red", year: "2021", size: "75cl", abv: "", region: "", grapes: "Pineau d'Aunis", price: null },
+  { name: "Trebbiolo", producer: "La Stoppa", type: "red", year: "2022", size: "75cl", abv: "", region: "", grapes: "Trebbiano", price: null },
+  { name: "Bourgogne", producer: "La Soeur Cadette", type: "red", year: "2023", size: "75cl", abv: "", region: "Bourgogne", grapes: "Pinot Noir", price: null },
+  { name: "Groseille", producer: "Alexis Hudon", type: "red", year: "2022", size: "75cl", abv: "", region: "", grapes: "Gamay", price: 1750 },
+  { name: "V.V. Rosso", producer: "Alberto Buratti", type: "red", year: "2022", size: "75cl", abv: "", region: "", grapes: "Cabernet Franc", price: 1750 },
+  { name: "Blaufrankisch Kalkstein", producer: "Claus Preisinger", type: "red", year: "2022", size: "75cl", abv: "", region: "", grapes: "Blaufränkisch", price: null },
+  { name: "Bourgogne Hautes-Côtes de Beaune", producer: "Maxime Crotet", type: "red", year: "2023", size: "75cl", abv: "", region: "Bourgogne", grapes: "Pinot Noir", price: 2350 },
+  { name: "A toi nous", producer: "Andrea Calek", type: "red", year: "2023", size: "75cl", abv: "", region: "", grapes: "Syrah", price: 1850 },
+  { name: "Franko", producer: "Alberto Buratti", type: "red", year: "NV", size: "75cl", abv: "", region: "", grapes: "Cabernet Franc", price: 1750 },
+  { name: "Onde Gravitazionali", producer: "Fabio Gea", type: "red", year: "2020", size: "75cl", abv: "", region: "", grapes: "Nebbiolo, Barbera, Dolcetto", price: 2650 },
+  { name: "La Msoira e'l Rastel Pino Dolcetto", producer: "Fabio Gea", type: "red", year: "NV", size: "75cl", abv: "", region: "", grapes: "Dolcetto", price: 2450 },
+  { name: "Lumiere des Sens", producer: "Jean-Pierre Robinot", type: "red", year: "2021", size: "75cl", abv: "", region: "", grapes: "Pineau d'Aunis", price: 2550 },
+  { name: "Atanasius Rot", producer: "Gut Oggau", type: "red", year: "2024", size: "75cl", abv: "", region: "", grapes: "Zweigelt, Blaufränkisch", price: 2450 },
+  { name: "Maskerade Rose", producer: "Gut Oggau", type: "red", year: "2024", size: "75cl", abv: "", region: "", grapes: "Zweigelt, Blaufränkisch", price: 2150 },
+  { name: "Aglianico Le Fole", producer: "Cantina Giardino", type: "red", year: "2019", size: "75cl", abv: "", region: "", grapes: "Aglianico", price: 1850 },
 ];
 
 const EMOJI = { red: "🍷", white: "🥂", orange: "🍊", sparkling: "✨" };
@@ -485,9 +539,9 @@ function renderGrid(type) {
           <div class="card-producer">${w.producer}</div>
           <div class="card-meta">
             <span class="meta-tag">${w.year}</span>
-            <span class="meta-tag">${w.abv}</span>
+            ${w.grapes ? '<span class="meta-tag">' + w.grapes.split(',')[0] + '</span>' : ''}
           </div>
-          <div class="card-price"><span class="currency">฿</span>${w.price.toLocaleString()}</div>
+          <div class="card-price">${w.price ? '<span class="currency">฿</span>' + w.price.toLocaleString() : '<span style=\'color:var(--ink-muted);font-size:13px\'>—</span>'}</div>
         </div>
       </div>`;
   }).join("");
@@ -503,11 +557,14 @@ function openModal(i) {
   badge.className = "modal-badge " + BADGE[w.type];
   document.getElementById("m-name").textContent = w.name;
   document.getElementById("m-producer").textContent = w.producer;
-  document.getElementById("m-tags").innerHTML =
-    [w.year, w.size, w.abv, w.region].map(t => `<span class="modal-tag">${t}</span>`).join("");
-  document.getElementById("m-desc").textContent = w.desc;
-  document.getElementById("m-grape").textContent = "🍇 " + w.grapes;
-  document.getElementById("m-price").textContent = "฿" + w.price.toLocaleString();
+  const tags = [w.year, w.size, w.region].filter(Boolean);
+  document.getElementById("m-tags").innerHTML = tags.map(t => `<span class="modal-tag">${t}</span>`).join("");
+  const grapeEl = document.getElementById("m-grape");
+  grapeEl.textContent = w.grapes ? "🍇 " + w.grapes : "";
+  grapeEl.style.display = w.grapes ? "" : "none";
+  const descEl = document.getElementById("m-desc");
+  descEl.style.display = "none";
+  document.getElementById("m-price").textContent = w.price ? "฿" + w.price.toLocaleString() : "ราคาสอบถามเพิ่มเติม";
   document.getElementById("overlay").classList.add("open");
   document.body.style.overflow = "hidden";
 }
