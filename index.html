@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Soul Wines — Wine List</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #F7F2EA;
+  --cream-dark: #EDE6D9;
+  --ink: #1C1A17;
+  --ink-soft: #4A4640;
+  --ink-muted: #8C867E;
+  --red: #7A1F1F;
+  --red-light: #F3E5E5;
+  --white-wine: #E8E2C8;
+  --white-wine-light: #FAF7EC;
+  --orange-wine: #C97B2A;
+  --orange-wine-light: #FBF0DC;
+  --sparkling: #3B6627;
+  --sparkling-light: #EBF3E4;
+  --border: rgba(28,26,23,0.12);
+  --radius: 12px;
+  --radius-sm: 6px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Header */
+header {
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.logo em {
+  font-style: italic;
+  color: var(--red);
+}
+
+.header-count {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* Filter */
+.filter-wrap {
+  padding: 1rem 1.5rem 0.75rem;
+  background: var(--cream);
+  position: sticky;
+  top: 56px;
+  z-index: 40;
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+
+.filter-btn.active {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Grid */
+.grid-wrap { padding: 1.25rem 1.5rem 3rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(28,26,23,0.1);
+}
+
+.card-img {
+  height: 170px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  position: relative;
+}
+
+.bottle-icon {
+  font-size: 64px;
+  line-height: 1;
+  user-select: none;
+}
+
+.type-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.card-body { padding: 10px 12px 12px; }
+
+.card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.card-producer {
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-bottom: 8px;
+}
+
+.card-meta {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.meta-tag {
+  font-size: 10px;
+  background: var(--cream-dark);
+  color: var(--ink-soft);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.card-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.currency { font-size: 13px; }
+
+/* Color themes */
+.bg-red { background: linear-gradient(180deg, #F9EDEB 0%, #F0DDD9 100%); }
+.bg-white { background: linear-gradient(180deg, #FAF7EC 0%, #EDE5C8 100%); }
+.bg-orange { background: linear-gradient(180deg, #FBF2E0 0%, #F2E2C0 100%); }
+.bg-sparkling { background: linear-gradient(180deg, #EBF3E4 0%, #D6E9CB 100%); }
+
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-white { background: var(--white-wine-light); color: #5A4E10; }
+.badge-orange { background: var(--orange-wine-light); color: #7A4A10; }
+.badge-sparkling { background: var(--sparkling-light); color: var(--sparkling); }
+
+/* Modal */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(28,26,23,0.55);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  .overlay { align-items: center; padding: 1rem; }
+}
+
+.overlay.open { display: flex; }
+
+.modal {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 600px) {
+  .modal { border-radius: var(--radius); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12px;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+}
+
+.modal-bottle { font-size: 90px; line-height: 1; }
+
+.modal-body { padding: 1.25rem 1.5rem 2rem; }
+
+.modal-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.modal-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.modal-producer {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+}
+
+.modal-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.modal-tag {
+  font-size: 11px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin-bottom: 12px;
+  font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+}
+
+.modal-grape {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-bottom: 16px;
+}
+
+.modal-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.modal-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  color: var(--ink);
+}
+
+.price-label {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/* Empty state */
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--ink-muted);
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 0.75rem; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .grid-wrap { padding: 1rem 1rem 3rem; }
+  header, .filter-wrap { padding-left: 1rem; padding-right: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Soul <em>Wines</em></div>
+  <div class="header-count" id="count"></div>
+</header>
+
+<div class="filter-wrap">
+  <div class="filter-bar" id="filters">
+    <button class="filter-btn active" data-type="all">All</button>
+    <button class="filter-btn" data-type="red">
+      <span class="dot" style="background:#7A1F1F"></span>Red
+    </button>
+    <button class="filter-btn" data-type="white">
+      <span class="dot" style="background:#C8B96A;border:1px solid #9e9060"></span>White
+    </button>
+    <button class="filter-btn" data-type="orange">
+      <span class="dot" style="background:#C97B2A"></span>Orange
+    </button>
+    <button class="filter-btn" data-type="sparkling">
+      <span class="dot" style="background:#3B6627"></span>Sparkling
+    </button>
+  </div>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" id="m-header">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div class="modal-bottle" id="m-bottle"></div>
+    </div>
+    <div class="modal-body">
+      <span class="modal-badge" id="m-badge"></span>
+      <div class="modal-name" id="m-name"></div>
+      <div class="modal-producer" id="m-producer"></div>
+      <div class="modal-tags" id="m-tags"></div>
+      <div class="divider"></div>
+      <div class="modal-desc" id="m-desc"></div>
+      <div class="modal-grape" id="m-grape"></div>
+      <div class="divider"></div>
+      <div class="modal-price-row">
+        <span class="modal-price" id="m-price"></span>
+        <span class="price-label">บาท / ขวด</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const wines = [
+  { name: "Brutal Orange", producer: "Matassa", type: "orange", year: "2024", size: "75cl", abv: "10%", region: "Languedoc-Roussillon", grapes: "Grenache Gris, Macabeu", price: 1890, desc: "Skin-contact orange with vivid apricot and dried citrus notes. Earthy texture, low intervention, lively finish." },
+  { name: "Cuvee Alexandria", producer: "Matassa", type: "orange", year: "2024", size: "75cl", abv: "10.5%", region: "Côtes Catalanes", grapes: "Muscat d'Alexandrie", price: 1590, desc: "Floral and aromatic with rose petal and peach. Gentle tannins from short skin maceration." },
+  { name: "El Carner", producer: "Matassa", type: "red", year: "2024", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "Grenache Gris, Macabeu", price: 1490, desc: "Light-bodied red with bright red fruit, fresh herbs, and a clean mineral finish. Chillable and versatile." },
+  { name: "El Carner", producer: "Matassa", type: "red", year: "2023", size: "75cl", abv: "10.5%", region: "Côtes Catalanes", grapes: "Grenache Gris, Macabeu", price: 1690, desc: "Previous vintage showing more depth and earthy complexity. Silky tannins, lingering finish." },
+  { name: "French Disko", producer: "Matassa", type: "red", year: "2023", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "Carignan", price: 2190, desc: "Old-vine Carignan with dark cherry, iron, and garrigue. Robust yet fresh — a crowd favourite." },
+  { name: "Olla Rouge", producer: "Matassa", type: "red", year: "2024", size: "75cl", abv: "10%", region: "Languedoc-Roussillon", grapes: "Grenache, Carignan", price: 1290, desc: "Juicy and easy-going. Plum, raspberry, and a hint of spice. Great for the table." },
+  { name: "Rufo", producer: "Matassa", type: "white", year: "2024", size: "75cl", abv: "10.5%", region: "Languedoc-Roussillon", grapes: "Macabeu", price: 1490, desc: "Crisp, stony white with green apple, white flowers, and a saline mineral edge. Pure and elegant." },
+  { name: "Tattouine", producer: "Matassa", type: "red", year: "2024", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "90% Grenache Gris, 10% Grenache Noir", price: 1590, desc: "Pale red with strawberry and watermelon. Light, joyful, and incredibly easy to drink." },
+  { name: "Tattouine Rouge", producer: "Matassa", type: "red", year: "2023", size: "75cl", abv: "10%", region: "Côtes Catalanes", grapes: "90% Grenache Gris, 10% Grenache Noir", price: 1586, desc: "Aged version with more structure. Red berries, dried flowers, long finish." },
+  { name: "Petite Étoile", producer: "Domaine Vinci", type: "sparkling", year: "NV", size: "75cl", abv: "11%", region: "Limoux", grapes: "Mauzac, Chardonnay", price: 1850, desc: "Méthode ancestrale with fine bubbles, green apple, almond, and a playful effervescence." },
+  { name: "Blanc de Blancs", producer: "Château Rives-Blanques", type: "sparkling", year: "2022", size: "75cl", abv: "12%", region: "Crémant de Limoux", grapes: "Chardonnay", price: 2100, desc: "Classic crémant with brioche, citrus zest, and elegant mousse. Ideal as an aperitif." },
+  { name: "La Lune", producer: "Jo Landron", type: "white", year: "2023", size: "75cl", abv: "12%", region: "Muscadet", grapes: "Melon de Bourgogne", price: 1750, desc: "Sur lie Muscadet with oyster shell, lemon, and a creamy texture. Benchmark style." },
+];
+
+const EMOJI = { red: "🍷", white: "🥂", orange: "🍊", sparkling: "✨" };
+const BG = { red: "bg-red", white: "bg-white", orange: "bg-orange", sparkling: "bg-sparkling" };
+const BADGE = { red: "badge-red", white: "badge-white", orange: "badge-orange", sparkling: "badge-sparkling" };
+
+let activeType = "all";
+
+function renderGrid(type) {
+  const grid = document.getElementById("grid");
+  const list = type === "all" ? wines : wines.filter(w => w.type === type);
+  document.getElementById("count").textContent = list.length + " wines";
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🍾</div><p>No wines in this category</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map(w => {
+    const idx = wines.indexOf(w);
+    return `
+      <div class="card" onclick="openModal(${idx})" role="button" tabindex="0" aria-label="${w.name}">
+        <div class="card-img ${BG[w.type]}">
+          <span class="type-badge ${BADGE[w.type]}">${w.type}</span>
+          <span class="bottle-icon" aria-hidden="true">${EMOJI[w.type]}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-name">${w.name}</div>
+          <div class="card-producer">${w.producer}</div>
+          <div class="card-meta">
+            <span class="meta-tag">${w.year}</span>
+            <span class="meta-tag">${w.abv}</span>
+          </div>
+          <div class="card-price"><span class="currency">฿</span>${w.price.toLocaleString()}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function openModal(i) {
+  const w = wines[i];
+  const hdr = document.getElementById("m-header");
+  hdr.className = "modal-header " + BG[w.type];
+  document.getElementById("m-bottle").textContent = EMOJI[w.type];
+  const badge = document.getElementById("m-badge");
+  badge.textContent = w.type;
+  badge.className = "modal-badge " + BADGE[w.type];
+  document.getElementById("m-name").textContent = w.name;
+  document.getElementById("m-producer").textContent = w.producer;
+  document.getElementById("m-tags").innerHTML =
+    [w.year, w.size, w.abv, w.region].map(t => `<span class="modal-tag">${t}</span>`).join("");
+  document.getElementById("m-desc").textContent = w.desc;
+  document.getElementById("m-grape").textContent = "🍇 " + w.grapes;
+  document.getElementById("m-price").textContent = "฿" + w.price.toLocaleString();
+  document.getElementById("overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  document.getElementById("overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("modal-close").onclick = closeModal;
+document.getElementById("overlay").onclick = e => { if (e.target === document.getElementById("overlay")) closeModal(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+document.getElementById("filters").addEventListener("click", e => {
+  const btn = e.target.closest(".filter-btn");
+  if (!btn) return;
+  activeType = btn.dataset.type;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b === btn));
+  renderGrid(activeType);
+});
+
+renderGrid("all");
+</script>
+</body>
+</html>
