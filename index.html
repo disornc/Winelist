@@ -872,10 +872,18 @@ function saveSoldOut() {
 
 function toggleSoldOut(idx, e) {
   e.stopPropagation();
-  if (soldOut.has(idx)) soldOut.delete(idx);
-  else soldOut.add(idx);
+  const isSoldOut = !soldOut.has(idx);
+  if (isSoldOut) soldOut.add(idx);
+  else soldOut.delete(idx);
   saveSoldOut();
   renderGrid(activeType);
+  // Send LINE notification
+  const w = wines[idx];
+  fetch("/api/notify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ wineName: w.name, producer: w.producer, isSoldOut })
+  }).catch(() => {});
 }
 
 function enterAdmin() {
