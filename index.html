@@ -629,15 +629,12 @@ header {
     <button class="filter-btn" data-type="local">
       <span class="dot" style="background:#1565C0"></span>Local Spirit
     </button>
-    <button class="pairing-btn" id="pairing-toggle">🍽️ Pairing</button>
+    <button class="pairing-btn" id="btn-match-food" data-mode="menu">🍽️ Match with Food</button>
+    <button class="pairing-btn" id="btn-find-feeling" data-mode="ai">✨ Find by Feeling</button>
   </div>
 </div>
 
 <div class="pairing-panel" id="pairing-panel">
-  <div class="pairing-mode-row" style="display:flex;gap:8px;margin-bottom:10px;">
-    <button class="pairing-mode-btn active" id="mode-menu" data-mode="menu">🍽️ เลือกจากเมนู</button>
-    <button class="pairing-mode-btn" id="mode-ai" data-mode="ai">✨ บอกฟีลที่อยากได้</button>
-  </div>
   <div class="pairing-input-row">
     <input type="text" class="pairing-input" id="pairing-food-input" placeholder="ชื่ออาหาร เช่น Beef 'N' Leaf, Holy Squid..." autocomplete="off" />
     <button class="pairing-submit" id="pairing-submit">แนะนำ</button>
@@ -1175,22 +1172,28 @@ document.getElementById('pairing-suggestions').addEventListener('click', e => {
 
 // Pairing mode
 let pairingMode = 'menu'; // 'menu' or 'ai'
-document.querySelectorAll('.pairing-mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    pairingMode = btn.dataset.mode;
-    document.querySelectorAll('.pairing-mode-btn').forEach(b => b.classList.toggle('active', b === btn));
-    const input = document.getElementById('pairing-food-input');
-    const suggestions = document.getElementById('pairing-suggestions');
-    input.value = '';
-    suggestions.innerHTML = '';
-    document.getElementById('pairing-results').innerHTML = '';
-    if (pairingMode === 'ai') {
-      input.placeholder = 'เช่น อยากได้อะไรดื่มง่าย ไม่ขม, อยากได้ฟีลสดชื่น...';
-    } else {
-      input.placeholder = "ชื่ออาหาร เช่น Beef 'N' Leaf, Holy Squid, South 'N' Sour...";
-    }
-  });
-});
+function openPairingPanel(mode) {
+  pairingMode = mode;
+  const panel = document.getElementById('pairing-panel');
+  const input = document.getElementById('pairing-food-input');
+  const suggestions = document.getElementById('pairing-suggestions');
+  // Highlight active button
+  document.querySelectorAll('.pairing-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  // Open panel
+  panel.classList.add('open');
+  // Reset
+  input.value = '';
+  suggestions.innerHTML = '';
+  document.getElementById('pairing-results').innerHTML = '';
+  if (mode === 'ai') {
+    input.placeholder = 'e.g. something light and easy, fruity but not sweet...';
+  } else {
+    input.placeholder = "e.g. Beef 'N' Leaf, Holy Squid, South 'N' Sour...";
+  }
+  setTimeout(() => input.focus(), 50);
+}
+document.getElementById('btn-match-food').addEventListener('click', () => openPairingPanel('menu'));
+document.getElementById('btn-find-feeling').addEventListener('click', () => openPairingPanel('ai'));
 
 async function runAiPairing(query) {
   const el = document.getElementById('pairing-results');
@@ -1230,13 +1233,7 @@ async function runAiPairing(query) {
   }
 }
 
-document.getElementById('pairing-toggle').addEventListener('click',()=>{
-  const panel=document.getElementById('pairing-panel');
-  const btn=document.getElementById('pairing-toggle');
-  const open=panel.classList.toggle('open');
-  btn.classList.toggle('active',open);
-  if(open) setTimeout(()=>document.getElementById('pairing-food-input').focus(),50);
-});
+
 document.getElementById('pairing-submit').addEventListener('click',()=>{
   const food=document.getElementById('pairing-food-input').value.trim();
   if(!food) return;
