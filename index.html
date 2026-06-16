@@ -1117,6 +1117,7 @@ function pairWines(foodText) {
   }
 
   const scored = wines.map((w,idx) => {
+    if (soldOut.has(idx)) return null;
     const ts = typeScores[w.type]||0;
     if (ts<=0) return null;
     // Bonus: check grapes + region against bonusKw
@@ -1204,7 +1205,7 @@ async function runAiPairing(query) {
     region: w.region || '', grapes: w.grapes || '',
     vinification: (w.vinification || '').slice(0, 150),
     price: w.price
-  }));
+  })).filter(w => !soldOut.has(w.idx));
   try {
     const r = await fetch('/api/ai-pairing', {
       method: 'POST',
