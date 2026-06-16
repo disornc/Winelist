@@ -523,6 +523,68 @@ header {
 .sort-option.selected { color: var(--accent); font-weight: 600; }
 .sort-option .sort-check { visibility: hidden; font-size: 10px; }
 .sort-option.selected .sort-check { visibility: visible; }
+
+/* Pairing */
+.pairing-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 999px; padding: 5px 12px;
+  font-size: 12px; cursor: pointer; white-space: nowrap;
+  transition: all 0.15s; color: var(--ink);
+  font-family: 'Inter', sans-serif; margin-left: 6px;
+}
+.pairing-btn:hover { border-color: var(--ink-soft); }
+.pairing-btn.active { background: #5C2D6E; border-color: #5C2D6E; color: #fff; }
+.pairing-panel {
+  display: none; padding: 1rem 1.5rem;
+  background: var(--cream); border-bottom: 1px solid var(--border);
+}
+.pairing-panel.open { display: block; }
+.pairing-input-row { display: flex; gap: 8px; align-items: center; }
+.pairing-input {
+  flex: 1; padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--border); font-size: 14px;
+  font-family: 'Inter', sans-serif; background: #fff; outline: none;
+}
+.pairing-input:focus { border-color: #5C2D6E; }
+.pairing-submit {
+  padding: 8px 18px; border-radius: 999px;
+  background: #5C2D6E; color: #fff; border: none;
+  font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.pairing-submit:hover { background: #4a2258; }
+.pairing-results { margin-top: 0.75rem; }
+.pairing-result-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+}
+.pairing-result-item:last-child { border-bottom: none; }
+.pairing-result-item:hover .pairing-wine-name { color: #5C2D6E; }
+.pairing-rank { font-family: 'Cormorant Garamond', serif; font-size: 20px; width: 28px; flex-shrink: 0; text-align: center; }
+.pairing-wine-name { font-size: 13px; font-weight: 500; color: var(--ink); transition: color 0.15s; }
+.pairing-wine-meta { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+.pairing-note { font-size: 11px; color: #5C2D6E; font-style: italic; margin-bottom: 10px; }
+.pairing-empty { text-align: center; color: var(--ink-muted); font-size: 13px; padding: 1rem 0; }
+
+/* Pairing mode toggle */
+.pairing-mode-row { display:flex; gap:6px; margin-bottom:10px; }
+.pairing-mode-btn {
+  padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border);
+  font-size: 12px; cursor: pointer; background: #fff; color: var(--ink);
+  font-family: 'Inter', sans-serif; transition: all 0.15s;
+}
+.pairing-mode-btn:hover { border-color: var(--ink-soft); }
+.pairing-mode-btn.active { background: #5C2D6E; border-color: #5C2D6E; color: #fff; }
+
+
+.pairing-suggestion {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 14px; background: #fff; border: 1px solid var(--border);
+  border-radius: 8px; margin-top: 4px; cursor: pointer; font-size: 13px;
+  transition: background 0.1s;
+}
+.pairing-suggestion:hover { background: #F5F0FF; }
+
 </style>
 </head>
 <body>
@@ -567,7 +629,21 @@ header {
     <button class="filter-btn" data-type="local">
       <span class="dot" style="background:#1565C0"></span>Local Spirit
     </button>
+    <button class="pairing-btn" id="pairing-toggle">🍽️ Pairing</button>
   </div>
+</div>
+
+<div class="pairing-panel" id="pairing-panel">
+  <div class="pairing-mode-row" style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="pairing-mode-btn active" id="mode-menu" data-mode="menu">🍽️ เลือกจากเมนู</button>
+    <button class="pairing-mode-btn" id="mode-ai" data-mode="ai">✨ บอกฟีลที่อยากได้</button>
+  </div>
+  <div class="pairing-input-row">
+    <input type="text" class="pairing-input" id="pairing-food-input" placeholder="ชื่ออาหาร เช่น Beef 'N' Leaf, Holy Squid..." autocomplete="off" />
+    <button class="pairing-submit" id="pairing-submit">แนะนำ</button>
+  </div>
+  <div id="pairing-suggestions" style="margin-top:4px;"></div>
+  <div class="pairing-results" id="pairing-results"></div>
 </div>
 
 <div class="grid-wrap">
@@ -905,6 +981,276 @@ document.getElementById("page-title").addEventListener("click", () => {
   clearTimeout(tapTimer);
   tapTimer = setTimeout(() => tapCount = 0, 3000);
   if (tapCount >= 5) { tapCount = 0; enterAdmin(); }
+});
+
+// ── Food Pairing ──────────────────────────────────────────────────────────
+const MENU_ITEMS = [
+  { name:"Rab 'N' Roll", cat:"Appetizer", price:210,
+    desc:"Larb pork wrapped in deep-fried crispy tofu skin",
+    kw:["rab n roll","rab'n'roll","larb","ลาบ","tofu skin"],
+    types:{red:2,orange:2,white:1,petnat:1},
+    bonus:["gamay","pineau d'aunis","zweigelt","grenache","loire","languedoc"],
+    note:"ลาบหมูรสจัดเข้ากันดีกับไวน์แดงเบา Gamay หรือออเรนจ์ที่มีความเปรี้ยว" },
+  { name:"Green Salad", cat:"Appetizer", price:220,
+    desc:"Kale & spinach, Vietnamese-style vinegar dressing",
+    kw:["green salad","kale","spinach","salad","สลัด","ผักสด"],
+    types:{white:3,petnat:2,orange:2},
+    bonus:["sauvignon blanc","chenin blanc","aligoté","aligote","loire","burgundy","riesling"],
+    note:"สลัดน้ำสลัดเปรี้ยวเข้ากันดีกับ Sauvignon Blanc หรือ Chenin Blanc Loire" },
+  { name:"Frence Never Fried", cat:"Appetizer", price:150,
+    desc:"Crispy sweet potato fries with jaew dipping sauce",
+    kw:["frence never fried","sweet potato","fries","french fries","มันทอด","jaew"],
+    types:{petnat:3,white:2,orange:1},
+    bonus:["pinot gris","gros manseng","manseng","muscat","czech","australia","moravia"],
+    note:"ของทอดกรอบเข้ากันดีกับเพ็ตนัตผลไม้ หรือไวน์ขาวที่มีความหวานนิดๆ" },
+  { name:"E-Sarn Tartare", cat:"Appetizer", price:340,
+    desc:"Thai-Wagyu beef raw, Isaan-fusion sauce, crispy rice paper",
+    kw:["e-sarn tartare","esarn","tartare","wagyu","raw beef","เนื้อดิบ","เนื้อวากิว"],
+    types:{petnat:3,white:2,orange:1},
+    bonus:["chenin blanc","sauvignon blanc","loire","riesling","alsace","mineral"],
+    note:"เนื้อดิบอีสานต้องการไวน์ที่มีความสด กรอบ มีแร่ธาตุ — Loire หรือ Alsace" },
+  { name:"Mariah's Favorite", cat:"Appetizer", price:320,
+    desc:"Spicy strawberry salad, house-made spicy dressing",
+    kw:["mariah","mariah's favorite","strawberry","สตรอเบอร์รี"],
+    types:{petnat:3,white:2,orange:2},
+    bonus:["muscat","gewurztraminer","pinot gris","gros manseng","fruity","alsace","moravia"],
+    note:"รสหวานเปรี้ยวเผ็ดเข้ากันดีกับเพ็ตนัตหอมผลไม้หรือ Gewurztraminer" },
+  { name:"Neck & Lime", cat:"Appetizer", price:240,
+    desc:"Grilled pork neck, spicy dressing, roasted rice powder",
+    kw:["neck & lime","neck and lime","neck lime","pork neck","คอหมู","หมูย่าง"],
+    types:{red:2,white:2,petnat:1,orange:1},
+    bonus:["gamay","pineau","riesling","chenin","loire","beaujolais","zweigelt","blaufrankisch"],
+    note:"คอหมูย่างรสเผ็ดเปรี้ยว — Gamay Loire หรือ Riesling ช่วยตัดรสได้ดี" },
+  { name:"Sea Sizzle", cat:"Appetizer", price:290,
+    desc:"Grilled prawns, Chinese-style chili oil",
+    kw:["sea sizzle","prawn","กุ้ง","grilled prawn","กุ้งย่าง"],
+    types:{white:3,petnat:2,orange:1},
+    bonus:["sauvignon blanc","aligoté","aligote","chenin","loire","burgundy","albarino","xarello"],
+    note:"กุ้งย่างน้ำมันพริกเข้ากันดีกับ Sauvignon Blanc Loire หรือ Albariño" },
+  { name:"Holy Squid", cat:"Appetizer", price:240,
+    desc:"Crispy fried squid, spicy Thai basil sauce",
+    kw:["holy squid","squid","ปลาหมึก","calamari"],
+    types:{white:3,orange:2,petnat:1},
+    bonus:["riesling","alsace","sauvignon blanc","chenin","curtimenta","arinto","portugal"],
+    note:"ปลาหมึกกรอบกะเพรา — Riesling Alsace หรือไวน์ขาวกรอบมีแร่ธาตุ" },
+  { name:"Sausage Pasta", cat:"Pasta", price:240,
+    desc:"Thai-style pasta with apple pork sausage",
+    kw:["sausage pasta","pasta","sausage","ไส้กรอก","พาสต้า"],
+    types:{red:2,orange:2,white:1},
+    bonus:["cabernet franc","grenache","gamay","dolcetto","barbera","veneto","italy","loire"],
+    note:"พาสต้าหมูเข้ากันดีกับ Cabernet Franc Veneto หรือ Grenache เบาๆ" },
+  { name:"Shrimp Pasta", cat:"Pasta", price:270,
+    desc:"Creamy pad cha pasta with grilled prawns",
+    kw:["shrimp pasta","shrimp","ผัดฉ่า","pad cha","กุ้งผัดฉ่า"],
+    types:{white:3,petnat:2,orange:1},
+    bonus:["chardonnay","viognier","chenin blanc","opera","loire","burgundy","australia"],
+    note:"ผัดฉ่าครีมกุ้ง — Chardonnay หรือ Chenin Blanc ที่มีความเต็มอิ่ม" },
+  { name:"Wabi Sabi", cat:"Seafood", price:230,
+    desc:"Pen shell slices, pickled wasabi, yuzu",
+    kw:["wabi sabi","pen shell","หอย","wasabi","yuzu","หอยเชลล์"],
+    types:{white:3,petnat:3},
+    bonus:["riesling","aligoté","aligote","chenin blanc","alsace","burgundy","loire","mosel","mineral"],
+    note:"หอยกับยูซุต้องการไวน์ที่มีแร่ธาตุและความสด — Riesling หรือ Aligoté Burgundy" },
+  { name:"South 'N' Sour", cat:"Seafood", price:310,
+    desc:"Crispy diced seabass, rich tom yum sauce",
+    kw:["south n sour","south'n'sour","seabass","กะพง","sea bass","tom yum","ต้มยำ"],
+    types:{white:3,petnat:3},
+    bonus:["chenin blanc","sauvignon blanc","riesling","petit manseng","loire","alsace","jurancon"],
+    note:"ปลากะพงต้มยำ — Chenin Blanc Loire หรือ Petit Manseng Jurançon เข้ากันมาก" },
+  { name:"Chickenstein", cat:"Meat", price:220,
+    desc:"Deboned chicken thigh, lemongrass & Thai herbs, grilled",
+    kw:["chickenstein","chicken","ไก่","lemongrass","ตะไคร้"],
+    types:{orange:3,white:2,petnat:1},
+    bonus:["gewurztraminer","muscat","traminer","alsace","malvasia","foresta","moravia","campania"],
+    note:"ไก่ย่างตะไคร้สมุนไพร — Gewurztraminer Alsace หรือ Muscat orange เสริมกลิ่นหอม" },
+  { name:"Rub Me Tender", cat:"Meat", price:240,
+    desc:"Japanese-style pork neck, yakiniku sauce, pickled wasabi",
+    kw:["rub me tender","rub me","yakiniku","ยากินิกุ","คอหมูญี่ปุ่น"],
+    types:{red:2,orange:2,white:1},
+    bonus:["pinot noir","burgundy","grenache","syrah","blaufrankisch","veneto","languedoc"],
+    note:"คอหมูยากินิกุ — Pinot Noir Burgundy หรือ Grenache Languedoc เข้ากันดี" },
+  { name:"Uncle Mike's", cat:"Meat", price:410,
+    desc:"300g organic pork chop, fermented fish sauce, jaew sauce",
+    kw:["uncle mike","uncle mike's","pork chop","สันคอหมู","หมูชิ้นใหญ่"],
+    types:{red:3,orange:1},
+    bonus:["blaufrankisch","zweigelt","aglianico","nebbiolo","syrah","austria","campania","piemonte"],
+    note:"สเต็กหมูอินทรีย์หมักปลาร้า — Blaufränkisch Austria หรือ Aglianico Campania" },
+  { name:"Beef 'N' Leaf", cat:"Meat", price:650,
+    desc:"200g Thai-Wagyu MB6, medium rare, Thai-style chimichurri",
+    kw:["beef n leaf","beef'n'leaf","wagyu","beef","เนื้อ","chimichurri","steak","เนื้อย่าง"],
+    types:{red:3},
+    bonus:["aglianico","nebbiolo","cabernet franc","blaufrankisch","syrah","campania","piemonte","veneto","rhone"],
+    note:"วากิวไทย MB6 — Aglianico Campania หรือ Nebbiolo Piemonte ที่มีโครงสร้างแน่น" },
+];
+
+function pairWines(foodText) {
+  const lower = foodText.toLowerCase().trim();
+  const menuMatch = MENU_ITEMS.find(m =>
+    m.name.toLowerCase().includes(lower) ||
+    lower.includes(m.name.toLowerCase()) ||
+    m.kw.some(k => lower.includes(k))
+  );
+  let typeScores, bonusKw = [], notes = [];
+  if (menuMatch) {
+    typeScores = {...menuMatch.types};
+    bonusKw = menuMatch.bonus || [];
+    notes = [menuMatch.note];
+  } else {
+    const generic = [
+      { kw:['ปลา','fish','salmon','กะพง'], types:{white:3,orange:2,petnat:2,red:-1}, bonus:['sauvignon blanc','chenin','riesling','loire'], note:'ปลาเข้ากันดีกับไวน์ขาวกรอบหรือออเรนจ์' },
+      { kw:['เนื้อ','beef','steak','wagyu'], types:{red:3,orange:1,white:-1}, bonus:['aglianico','nebbiolo','cabernet franc','blaufrankisch'], note:'เนื้อแดงต้องการไวน์แดงที่มีโครงสร้าง' },
+      { kw:['หมู','pork','pig'], types:{red:2,white:2,orange:1}, bonus:['pinot noir','grenache','gamay','chenin'], note:'หมูเข้าได้ทั้งไวน์แดงเบาและขาว' },
+      { kw:['ไก่','chicken'], types:{white:2,orange:3,petnat:1}, bonus:['gewurztraminer','muscat','traminer','alsace'], note:'ไก่เข้ากันดีกับออเรนจ์หอมหรือไวน์ขาว' },
+      { kw:['กุ้ง','shrimp','prawn','หอย','seafood','อาหารทะเล'], types:{white:3,petnat:3,orange:1}, bonus:['sauvignon blanc','riesling','aligoté','chenin'], note:'อาหารทะเลต้องการไวน์ขาวกรอบมีแร่ธาตุ' },
+      { kw:['ผัก','salad','สลัด','เห็ด','mushroom'], types:{orange:3,white:2,petnat:1}, bonus:['malvasia','gewurztraminer','muscat','ageno'], note:'ผักและสลัดเข้ากันดีกับออเรนจ์ไวน์' },
+      { kw:['เผ็ด','spicy','ต้มยำ','ยำ','ลาบ'], types:{white:3,petnat:2,orange:1}, bonus:['riesling','chenin','gewurztraminer','manseng'], note:'ไวน์ขาวหอมหรือเพ็ตนัตช่วยตัดรสเผ็ด' },
+    ];
+    typeScores = {red:0,white:0,orange:0,petnat:0,local:0};
+    generic.forEach(r => {
+      if (r.kw.some(k => lower.includes(k))) {
+        Object.entries(r.types).forEach(([t,s]) => { typeScores[t]=(typeScores[t]||0)+s; });
+        bonusKw.push(...(r.bonus||[]));
+        notes.push(r.note);
+      }
+    });
+    if (Object.values(typeScores).reduce((a,b)=>a+Math.max(b,0),0)===0) {
+      typeScores={white:2,red:1,orange:2,petnat:1};
+      notes=['ลองไวน์ขาวหรือออเรนจ์เป็น starting point ครับ'];
+    }
+  }
+
+  const scored = wines.map((w,idx) => {
+    const ts = typeScores[w.type]||0;
+    if (ts<=0) return null;
+    // Bonus: check grapes + region against bonusKw
+    const wineText = ((w.grapes||'')+(w.region||'')).toLowerCase();
+    const bonusScore = bonusKw.reduce((acc,kw) => acc+(wineText.includes(kw.toLowerCase())?1:0), 0);
+    // Small random jitter to vary ties (0-0.3)
+    const jitter = Math.random()*0.3;
+    return {idx, wine:w, score: ts + bonusScore*0.8 + jitter};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
+
+  return {results:scored.slice(0,5), notes:[...new Set(notes)], menuMatch};
+}
+
+function renderPairingResults(foodText) {
+  const {results, notes, menuMatch} = pairWines(foodText);
+  const el = document.getElementById('pairing-results');
+  if (!results.length) { el.innerHTML='<div class="pairing-empty">ไม่พบไวน์ที่เหมาะสม ลองพิมพ์ชื่ออาหารอื่นครับ</div>'; return; }
+  const medals = ['🥇','🥈','🥉','④','⑤'];
+  const menuHtml = menuMatch ? `<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px;">🍽️ <strong>${menuMatch.name}</strong> — ${menuMatch.desc}</div>` : '';
+  const noteHtml = notes.length ? `<div class="pairing-note">${notes.slice(0,1).join('')}</div>` : '';
+  el.innerHTML = menuHtml + noteHtml + results.map((r,i)=>`
+    <div class="pairing-result-item" onclick="openModal(${r.idx})">
+      <div class="pairing-rank">${medals[i]}</div>
+      <div style="flex:1;">
+        <div class="pairing-wine-name">${r.wine.producer} — ${r.wine.name} ${r.wine.year||''}</div>
+        <div class="pairing-wine-meta">${r.wine.region||''} · ${r.wine.type.charAt(0).toUpperCase()+r.wine.type.slice(1)} · ฿${r.wine.price.toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderSuggestions(val) {
+  const el = document.getElementById('pairing-suggestions');
+  if (!val||val.length<2) { el.innerHTML=''; return; }
+  const lower = val.toLowerCase();
+  const matches = MENU_ITEMS.filter(m=>m.name.toLowerCase().includes(lower)||m.kw.some(k=>k.includes(lower)));
+  if (!matches.length) { el.innerHTML=''; return; }
+  el.innerHTML = matches.slice(0,5).map(m=>
+    `<div class="pairing-suggestion" onclick="selectSuggestion('${m.name.replace(/'/g,"\\'")}')">
+      <span>${m.name}</span><span style="color:var(--ink-muted);font-size:11px;">${m.cat} · ฿${m.price}</span>
+    </div>`).join('');
+}
+// Suggestion click via event delegation (avoids apostrophe escaping issues)
+document.getElementById('pairing-suggestions').addEventListener('click', e => {
+  const item = e.target.closest('.pairing-suggestion');
+  if (!item) return;
+  const m = MENU_ITEMS[parseInt(item.dataset.midx)];
+  if (!m) return;
+  document.getElementById('pairing-food-input').value = m.name;
+  document.getElementById('pairing-suggestions').innerHTML = '';
+  renderPairingResults(m.name);
+});
+
+
+// Pairing mode
+let pairingMode = 'menu'; // 'menu' or 'ai'
+document.querySelectorAll('.pairing-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    pairingMode = btn.dataset.mode;
+    document.querySelectorAll('.pairing-mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const input = document.getElementById('pairing-food-input');
+    const suggestions = document.getElementById('pairing-suggestions');
+    input.value = '';
+    suggestions.innerHTML = '';
+    document.getElementById('pairing-results').innerHTML = '';
+    if (pairingMode === 'ai') {
+      input.placeholder = 'เช่น อยากได้อะไรดื่มง่าย ไม่ขม, อยากได้ฟีลสดชื่น...';
+    } else {
+      input.placeholder = "ชื่ออาหาร เช่น Beef 'N' Leaf, Holy Squid, South 'N' Sour...";
+    }
+  });
+});
+
+async function runAiPairing(query) {
+  const el = document.getElementById('pairing-results');
+  el.innerHTML = '<div class="pairing-empty">✨ กำลังคิด...</div>';
+  // Build condensed wine list (no images)
+  const wineData = wines.map((w, idx) => ({
+    idx, name: w.name, producer: w.producer, type: w.type,
+    region: w.region || '', grapes: w.grapes || '',
+    vinification: (w.vinification || '').slice(0, 150),
+    price: w.price
+  }));
+  try {
+    const r = await fetch('/api/ai-pairing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, wines: wineData })
+    });
+    const data = await r.json();
+    if (!r.ok || !data.recommendations) throw new Error(data.error || 'Error');
+    const medals = ['🥇','🥈','🥉','④','⑤'];
+    el.innerHTML = `<div class="pairing-note">✨ AI แนะนำสำหรับ "${query}"</div>` +
+      data.recommendations.map((rec, i) => {
+        const w = wines[rec.idx];
+        if (!w) return '';
+        return `<div class="pairing-result-item" onclick="openModal(${rec.idx})">
+          <div class="pairing-rank">${medals[i]||'·'}</div>
+          <div style="flex:1;">
+            <div class="pairing-wine-name">${w.producer} — ${w.name} ${w.year||''}</div>
+            <div class="pairing-wine-meta">${w.region||''} · ${w.type.charAt(0).toUpperCase()+w.type.slice(1)} · ฿${w.price.toLocaleString()}</div>
+            <div style="font-size:11px;color:#5C2D6E;font-style:italic;margin-top:2px;">${rec.reason}</div>
+          </div>
+        </div>`;
+      }).join('');
+  } catch(e) {
+    // Fallback to rule-based
+    el.innerHTML = '<div class="pairing-empty" style="color:#c0392b;">ไม่สามารถเชื่อมต่อ AI ได้ ลองใหม่อีกครั้ง</div>';
+  }
+}
+
+document.getElementById('pairing-toggle').addEventListener('click',()=>{
+  const panel=document.getElementById('pairing-panel');
+  const btn=document.getElementById('pairing-toggle');
+  const open=panel.classList.toggle('open');
+  btn.classList.toggle('active',open);
+  if(open) setTimeout(()=>document.getElementById('pairing-food-input').focus(),50);
+});
+document.getElementById('pairing-submit').addEventListener('click',()=>{
+  const food=document.getElementById('pairing-food-input').value.trim();
+  if(!food) return;
+  if(pairingMode === 'ai') { runAiPairing(food); }
+  else { renderPairingResults(food); document.getElementById('pairing-suggestions').innerHTML=''; }
+});
+document.getElementById('pairing-food-input').addEventListener('input',e=>{ if(pairingMode==='menu') renderSuggestions(e.target.value); });
+document.getElementById('pairing-food-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const food=e.target.value.trim();
+    if(!food) return;
+    if(pairingMode === 'ai') { runAiPairing(food); }
+    else { renderPairingResults(food); document.getElementById('pairing-suggestions').innerHTML=''; }
+  }
 });
 </script>
 
