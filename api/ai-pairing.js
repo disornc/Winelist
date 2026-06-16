@@ -13,17 +13,17 @@ module.exports = async function handler(req, res) {
     `[${w.idx}] ${w.producer} — ${w.name} (${w.type}, ${w.region}) ฿${w.price} | Grapes: ${w.grapes || '-'} | ${(w.vinification || '').slice(0, 120)}`
   ).join('\n');
 
-  const prompt = `คุณเป็น sommelier ของร้านไวน์ natural wine ช่วยแนะนำไวน์จากรายการด้านล่างให้ลูกค้า
+  const prompt = `You are a sommelier at a natural wine bar. Recommend wines from the list below based on the customer's request.
 
-ลูกค้าบอกว่า: "${query}"
+Customer said: "${query}"
 
-รายการไวน์:
+Wine list:
 ${wineList}
 
-ตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ:
-[{"idx": <number>, "reason": "<อธิบาย 1 ประโยคภาษาไทยว่าทำไมเหมาะ ใช้ภาษาง่ายๆ ไม่ต้องใช้ศัพท์ wine>"}]
+Reply with a JSON array only, no other text. Format:
+[{"idx": <number>, "reason": "<1 sentence in simple English explaining why this wine fits — no wine jargon, just vibe and feeling>"}]
 
-แนะนำ 3-5 ขวด เรียงจากเหมาะที่สุด ตอบแค่ JSON เท่านั้น`;
+Recommend 3-5 wines, best match first. Reply with JSON only.`;
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
