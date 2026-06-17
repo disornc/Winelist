@@ -113,6 +113,11 @@ header {
   color: var(--cream);
   border-color: var(--ink);
 }
+.filter-btn.active[data-type="red"]    { background: #7A1F1F; border-color: #7A1F1F; color: #fff; }
+.filter-btn.active[data-type="white"]  { background: #7a6e28; border-color: #7a6e28; color: #fff; }
+.filter-btn.active[data-type="orange"] { background: #C97B2A; border-color: #C97B2A; color: #fff; }
+.filter-btn.active[data-type="petnat"] { background: #3B6627; border-color: #3B6627; color: #fff; }
+.filter-btn.active[data-type="local"]  { background: #1565C0; border-color: #1565C0; color: #fff; }
 
 .dot {
   width: 7px;
@@ -535,6 +540,24 @@ header {
 }
 .pairing-btn:hover { border-color: var(--ink-soft); }
 .pairing-btn.active { background: #5C2D6E; border-color: #5C2D6E; color: #fff; }
+
+.pairing-btn.pairing-highlight {
+  background: linear-gradient(135deg, #5C2D6E, #9B4DCA);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(92,45,110,0.35);
+  padding: 5px 16px;
+}
+.pairing-btn.pairing-highlight:hover {
+  background: linear-gradient(135deg, #4a2258, #8a3db8);
+  box-shadow: 0 3px 12px rgba(92,45,110,0.45);
+}
+.pairing-btn.pairing-highlight.active {
+  background: linear-gradient(135deg, #3d1a4d, #6b2d9e);
+  box-shadow: 0 1px 4px rgba(92,45,110,0.3);
+}
+
 .pairing-panel {
   display: none; padding: 1rem 1.5rem;
   background: var(--cream); border-bottom: 1px solid var(--border);
@@ -590,7 +613,10 @@ header {
 <body>
 
 <header>
-  <div class="logo" id="page-title" style="cursor:default;user-select:none;">Grapey <em>Winelist</em></div>
+  <div id="page-title" style="cursor:default;user-select:none;line-height:1.1;">
+    <div class="logo">Grapey</div>
+    <div style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.18em;color:var(--ink-muted);text-transform:uppercase;margin-top:1px;">Natural Wine</div>
+  </div>
   <div class="header-right">
     <div class="search-box-header">
       <span class="search-icon-sm">🔍</span>
@@ -621,7 +647,7 @@ header {
       <span class="dot" style="background:#C8B96A;border:1px solid #9e9060"></span>White
     </button>
     <button class="filter-btn" data-type="orange">
-      <span class="dot" style="background:#C97B2A"></span>Orange
+      <span class="dot" style="background:#C97B2A"></span>Skin-Contact
     </button>
     <button class="filter-btn" data-type="petnat">
       <span class="dot" style="background:#3B6627"></span>Pet-Nat
@@ -629,8 +655,7 @@ header {
     <button class="filter-btn" data-type="local">
       <span class="dot" style="background:#1565C0"></span>Local Spirit
     </button>
-    <button class="pairing-btn" id="btn-match-food" data-mode="menu">🍽️ Match with Food</button>
-    <button class="pairing-btn" id="btn-find-feeling" data-mode="ai">✨ Find by Feeling</button>
+    <button class="pairing-btn pairing-highlight" id="btn-find-feeling" data-mode="ai">✨ Find by Feeling</button>
   </div>
 </div>
 
@@ -1172,7 +1197,7 @@ document.getElementById('pairing-suggestions').addEventListener('click', e => {
 
 
 // Pairing mode
-let pairingMode = 'menu'; // 'menu' or 'ai'
+let pairingMode = 'ai'; // default to AI mode
 function openPairingPanel(mode) {
   pairingMode = mode;
   const panel = document.getElementById('pairing-panel');
@@ -1193,7 +1218,6 @@ function openPairingPanel(mode) {
   }
   setTimeout(() => input.focus(), 50);
 }
-document.getElementById('btn-match-food').addEventListener('click', () => openPairingPanel('menu'));
 document.getElementById('btn-find-feeling').addEventListener('click', () => openPairingPanel('ai'));
 
 async function runAiPairing(query) {
