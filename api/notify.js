@@ -6,27 +6,19 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
   const { wineName, producer, isSoldOut } = req.body;
-  const token  = process.env.LINE_TOKEN;
-  const userId = process.env.LINE_USER_ID;
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
-  const text = isSoldOut
-    ? `🔴 Sold Out\n${producer} — ${wineName}`
-    : `✅ Available Again\n${producer} — ${wineName}`;
+  const content = isSoldOut
+    ? `🔴 **Sold Out**\n${producer} — ${wineName}`
+    : `✅ **Available Again**\n${producer} — ${wineName}`;
 
   try {
-    const r = await fetch("https://api.line.me/v2/bot/message/push", {
+    const r = await fetch(webhookUrl, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        to: userId,
-        messages: [{ type: "text", text }]
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content })
     });
-    const data = await r.json();
-    res.status(200).json({ ok: true, line: data });
+    res.status(200).json({ ok: true, status: r.status });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
