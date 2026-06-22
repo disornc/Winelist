@@ -986,7 +986,7 @@ function toggleSoldOut(idx, e) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ wineName: w.name, producer: w.producer, isSoldOut })
-  }).catch(() => {});
+  }).then(r => r.json()).then(d => console.log('[notify]', d)).catch(e => console.error('[notify error]', e));
 }
 
 function enterAdmin() {
