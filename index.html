@@ -990,8 +990,7 @@ function toggleSoldOut(idx, e) {
   else soldOut.delete(key);
   saveSoldOut();
   renderGrid(activeType);
-  // Send LINE notification
-  const w = wines[idx];
+  // Send Discord notification
   fetch("/api/notify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
