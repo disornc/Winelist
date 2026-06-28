@@ -330,6 +330,12 @@
     "price": 2350
   },
   {
+    "name": "Likes Rain Drop 22",
+    "producer": "Jauma",
+    "type": "red",
+    "price": 1850
+  },
+  {
     "name": "CL 23",
     "producer": "Partida Creus",
     "type": "red",
@@ -460,5 +466,41 @@
     "producer": "Franz Strohmeier",
     "type": "red",
     "price": 2550
+  },
+  {
+    "name": "Cremant d'Alsace NV",
+    "producer": "Pepin",
+    "type": "petnat",
+    "price": 1950
+  },
+  {
+    "name": "Kisi (Sister Wine) 2018",
+    "producer": "Okro's Wines",
+    "type": "orange",
+    "price": 2250
+  },
+  {
+    "name": "Montlouis Les Epinays 2022",
+    "producer": "La Grange Tiphaine",
+    "type": "white",
+    "price": 2550
+  },
+  {
+    "name": "Pineau d'Aunis 2022",
+    "producer": "Clos du Tue-Boeuf",
+    "type": "red",
+    "price": 1850
+  },
+  {
+    "name": "Touraine La Butte 2023",
+    "producer": "Clos du Tue-Boeuf",
+    "type": "red",
+    "price": 1850
+  },
+  {
+    "name": "Becarre 2022",
+    "producer": "La Grange Tiphaine",
+    "type": "red",
+    "price": 2050
   }
 ]
