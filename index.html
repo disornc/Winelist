@@ -828,7 +828,7 @@ function renderGrid(type) {
   }
   grid.innerHTML = list.map(w => {
     const idx = wines.indexOf(w);
-    const isSoldOut = soldOut.has(idx);
+    const isSoldOut = soldOut.has(wineKey(w));
     const cardClick = adminMode ? `toggleSoldOut(${idx}, event)` : `openModal(${idx})`;
     return `
       <div class="card${isSoldOut ? ' sold-out' : ''}" onclick="${cardClick}" role="button" tabindex="0" aria-label="${w.name}">
@@ -962,6 +962,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const soldOutRef = db.ref("soldOut");
+function wineKey(w) { return w.producer + "|" + w.name; }
 
 // ── Admin mode ────────────────────────────────────────────────────────────────
 let adminMode = false;
@@ -982,9 +983,11 @@ function saveSoldOut() {
 
 function toggleSoldOut(idx, e) {
   e.stopPropagation();
-  const isSoldOut = !soldOut.has(idx);
-  if (isSoldOut) soldOut.add(idx);
-  else soldOut.delete(idx);
+  const w = wines[idx];
+  const key = wineKey(w);
+  const isSoldOut = !soldOut.has(key);
+  if (isSoldOut) soldOut.add(key);
+  else soldOut.delete(key);
   saveSoldOut();
   renderGrid(activeType);
   // Send LINE notification
