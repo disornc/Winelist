@@ -154,48 +154,41 @@ header {
   text-transform: uppercase; padding: 3px 7px;
   border-radius: 4px; pointer-events: none;
 }
-.admin-toggle-btn {
-  position: absolute; bottom: 8px; right: 8px; z-index: 4;
-  width: 28px; height: 28px; border-radius: 50%;
-  border: none; cursor: pointer; font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.9); box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-  transition: transform 0.1s;
+.admin-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px 10px; gap: 6px;
+  border-top: 1px solid rgba(0,0,0,0.07);
 }
-.admin-toggle-btn:active { transform: scale(0.88); }
 .admin-stock-ctrl {
-  position: absolute; bottom: 8px; left: 8px; right: 40px; z-index: 4;
-  display: flex; align-items: center; gap: 3px;
-}
-.stock-input {
-  width: 38px; padding: 3px 2px; font-size: 11px;
-  border: 1px solid rgba(0,0,0,0.2); border-radius: 4px;
-  text-align: center; background: rgba(255,255,255,0.92);
-  flex-shrink: 0;
-}
-.stock-save-btn {
-  font-size: 11px; padding: 3px 7px; border: none;
-  background: var(--purple, #5B2D6E); color: #fff;
-  border-radius: 4px; cursor: pointer;
+  display: flex; align-items: center; gap: 4px; flex: 1;
 }
 .stock-adj-btn {
-  width: 24px; height: 24px; border: none;
-  background: rgba(255,255,255,0.92); border-radius: 4px;
-  cursor: pointer; font-size: 15px; font-weight: 700; line-height: 1;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.18); flex-shrink: 0;
+  width: 28px; height: 28px; border: none;
+  background: #ede8e3; border-radius: 6px;
+  cursor: pointer; font-size: 16px; font-weight: 700; line-height: 1;
+  flex-shrink: 0;
 }
-.stock-count {
-  min-width: 28px; text-align: center; font-size: 12px;
-  font-weight: 700; color: var(--ink, #1c1a17);
-  background: rgba(255,255,255,0.92); border-radius: 4px;
-  padding: 2px 5px; border: 1px solid rgba(0,0,0,0.1);
+.stock-adj-btn:disabled { opacity: 0.3; cursor: default; }
+.stock-input {
+  flex: 1; min-width: 0; max-width: 52px; padding: 4px 4px;
+  font-size: 12px; border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 6px; text-align: center; background: #fff;
 }
-.stock-badge {
-  position: absolute; top: 8px; right: 8px; z-index: 3;
-  background: rgba(28,26,23,0.75); color: #fff;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  padding: 2px 7px; border-radius: 10px;
+.stock-save-btn {
+  width: 28px; height: 28px; border: none;
+  background: var(--purple, #5B2D6E); color: #fff;
+  border-radius: 6px; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
+.admin-toggle-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: none; cursor: pointer; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.9); box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  flex-shrink: 0;
+}
+.admin-toggle-btn:active { transform: scale(0.88); }
 /* Admin bar */
 #admin-bar {
   display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
@@ -861,7 +854,7 @@ function renderGrid(type) {
   grid.innerHTML = list.map(w => {
     const idx = wines.indexOf(w);
     const isSoldOut = soldOut.has(wineKey(w));
-    const cardClick = adminMode ? `toggleSoldOut(${idx}, event)` : `openModal(${idx})`;
+    const cardClick = adminMode ? `event.stopPropagation()` : `openModal(${idx})`;
     return `
       <div class="card${isSoldOut ? ' sold-out' : ''}" onclick="${cardClick}" role="button" tabindex="0" aria-label="${w.name}">
         ${isSoldOut ? '<div class="sold-out-badge">Sold Out</div>' : ''}
@@ -882,7 +875,7 @@ function renderGrid(type) {
           </div>
           <div class="card-price">${w.price ? '<span class="currency">฿</span>' + w.price.toLocaleString() : '<span style=\'color:var(--ink-muted);font-size:13px\'>—</span>'}</div>
         </div>
-        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button><div class="admin-stock-ctrl" onclick="event.stopPropagation()"><button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)" ${!stockData[wineKey(w)] ? 'disabled style="opacity:0.3"' : ''}>−</button><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)" ${!stockData[wineKey(w)] ? 'disabled style="opacity:0.3"' : ''}>+</button><button class="stock-save-btn" onclick="setStock(${idx},event)" title="บันทึก">💾</button></div>` : ``}
+        ${adminMode ? `<div class="admin-row" onclick="event.stopPropagation()"><div class="admin-stock-ctrl"><button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)" ${!stockData[wineKey(w)] ? 'disabled' : ''}>−</button><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)" ${!stockData[wineKey(w)] ? 'disabled' : ''}>+</button><button class="stock-save-btn" onclick="setStock(${idx},event)">💾</button></div><button class="admin-toggle-btn" onclick="toggleSoldOut(${idx},event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button></div>` : ``}
       </div>`;
   }).join("");
 }
