@@ -875,7 +875,7 @@ function renderGrid(type) {
           </div>
           <div class="card-price">${w.price ? '<span class="currency">฿</span>' + w.price.toLocaleString() : '<span style=\'color:var(--ink-muted);font-size:13px\'>—</span>'}</div>
         </div>
-        ${adminMode ? `<div class="admin-row" onclick="event.stopPropagation()"><div class="admin-stock-ctrl"><button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)" ${!stockData[wineKey(w)] ? 'disabled' : ''}>−</button><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)" ${!stockData[wineKey(w)] ? 'disabled' : ''}>+</button><button class="stock-save-btn" onclick="setStock(${idx},event)">💾</button></div><button class="admin-toggle-btn" onclick="toggleSoldOut(${idx},event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button></div>` : ``}
+        ${adminMode ? `<div class="admin-row" onclick="event.stopPropagation()"><div class="admin-stock-ctrl"><button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)" ${!stockData[wineKey(w)] ? 'disabled' : ''}>−</button><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)" ${!stockData[wineKey(w)] ? 'disabled' : ''}>+</button><button class="stock-save-btn" onclick="setStock(${idx},this,event)">💾</button></div><button class="admin-toggle-btn" onclick="toggleSoldOut(${idx},event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button></div>` : ``}
       </div>`;
   }).join("");
 }
@@ -1045,11 +1045,11 @@ function adjustStock(idx, delta, e) {
   renderGrid(activeType);
 }
 
-function setStock(idx, e) {
+function setStock(idx, btn, e) {
   e.stopPropagation();
   const w = wines[idx];
   const key = wineKey(w);
-  const el = document.getElementById("si-" + idx);
+  const el = btn.parentElement.querySelector('.stock-input');
   const qty = parseInt(el.value);
   if (isNaN(qty) || qty < 0) return;
   // เก็บ initialStock ครั้งแรกที่ตั้ง, ถ้ามีอยู่แล้วให้คงไว้
