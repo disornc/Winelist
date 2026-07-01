@@ -7,7 +7,6 @@ module.exports = async function handler(req, res) {
   const dbBase = "https://winelist-6bea7-default-rtdb.firebaseio.com";
 
   try {
-    // Fetch sold-out keys and stock data in parallel
     const [soldOutRes, stockRes] = await Promise.all([
       fetch(`${dbBase}/soldOut.json`),
       fetch(`${dbBase}/wineStock.json`)
@@ -17,7 +16,6 @@ module.exports = async function handler(req, res) {
 
     const soldOutKeys = soldOutData ? Object.values(soldOutData) : [];
 
-    // Build wine lookup map
     const wineMap = {};
     wines.forEach(w => { wineMap[`${w.producer}|${w.name}`] = w; });
 
@@ -35,24 +33,34 @@ module.exports = async function handler(req, res) {
     const stockEntries = Object.entries(stockData);
 
     if (stockEntries.length > 0) {
-      const inStock = {};
+      const inStock  = {};
       const lowStock = {};
       const outStock = [];
+      let totalBottles = 0;
+      let totalSold    = 0;
 
       stockEntries.forEach(([key, data]) => {
-        const qty = data.quantity ?? 0;
-        const label = typeLabel[data.type] || "🍾 Other";
+        const qty     = data.quantity ?? 0;
+        const initial = data.initialStock ?? qty;
+        const sold    = initial - qty;
+        totalBottles += qty;
+        totalSold    += sold;
+        const label   = typeLabel[data.type] || "🍾 Other";
+        const soldStr = sold > 0 ? ` *(ขายไป ${sold})*` : "";
+
         if (qty === 0) {
-          outStock.push(`• ${data.producer} — ${data.name}`);
+          outStock.push(`• ${data.producer} — ${data.name}${sold > 0 ? ` *(ขายไป ${sold})*` : ""}`);
+        } else if (qty <= 1) {
+          if (!lowStock[label]) lowStock[label] = [];
+          lowStock[label].push(`• ${data.producer} — ${data.name} — **เหลือ ${qty} btl**${soldStr}`);
         } else {
-          const target = qty <= 1 ? lowStock : inStock;
-          if (!target[label]) target[label] = [];
-          target[label].push(`• ${data.producer} — ${data.name} **(${qty} btl)**`);
+          if (!inStock[label]) inStock[label] = [];
+          inStock[label].push(`• ${data.producer} — ${data.name} — เหลือ ${qty} btl${soldStr}`);
         }
       });
 
       if (Object.keys(inStock).length > 0) {
-        lines.push(`✅ **Wine in Stock**`);
+        lines.push(`✅ **In Stock**`);
         for (const [type, list] of Object.entries(inStock)) {
           lines.push(`**${type}**`);
           list.forEach(l => lines.push(l));
@@ -75,11 +83,10 @@ module.exports = async function handler(req, res) {
         lines.push('');
       }
 
-      const totalBottles = stockEntries.reduce((s, [, d]) => s + (d.quantity ?? 0), 0);
-      lines.push(`📊 **Summary:** ${stockEntries.length} wines tracked · ${totalBottles} bottles remaining`);
+      lines.push(`📊 **สรุป:** ขายไปทั้งหมด **${totalSold} btl** · เหลือ **${totalBottles} btl** จาก ${stockEntries.length} ไวน์`);
 
     } else if (soldOutKeys.length > 0) {
-      // Fallback if no stock data set yet
+      // fallback ถ้ายังไม่ได้ตั้ง stock
       const grouped = {};
       soldOutKeys.forEach(key => {
         const w = wineMap[key];
@@ -93,6 +100,8 @@ module.exports = async function handler(req, res) {
         lines.push(`**${type}**`);
         list.forEach(l => lines.push(l));
       }
+      lines.push('');
+      lines.push(`_ยังไม่ได้ตั้ง stock — เข้า admin mode แล้วใส่จำนวนขวดแต่ละไวน์เพื่อดู report เต็ม_`);
     } else {
       lines.push(`✅ ไม่มีไวน์ Sold Out — ครบทุกขวด 🍷`);
     }
