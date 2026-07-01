@@ -191,9 +191,11 @@ header {
 .admin-toggle-btn:active { transform: scale(0.88); }
 /* Admin bar */
 #admin-bar {
-  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  z-index: 200; white-space: nowrap;
   background: rgba(28,26,23,0.93); color: #fff;
-  padding: 12px 20px; align-items: center; justify-content: space-between;
+  padding: 10px 18px; align-items: center; gap: 16px;
+  border-radius: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.35);
   backdrop-filter: blur(8px);
 }
 #admin-bar.visible { display: flex; }
