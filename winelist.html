@@ -163,6 +163,26 @@ header {
   transition: transform 0.1s;
 }
 .admin-toggle-btn:active { transform: scale(0.88); }
+.admin-stock-ctrl {
+  position: absolute; bottom: 8px; left: 8px; z-index: 4;
+  display: flex; align-items: center; gap: 4px;
+}
+.stock-input {
+  width: 48px; padding: 3px 5px; font-size: 11px;
+  border: 1px solid rgba(0,0,0,0.2); border-radius: 4px;
+  text-align: center; background: rgba(255,255,255,0.92);
+}
+.stock-save-btn {
+  font-size: 11px; padding: 3px 7px; border: none;
+  background: var(--purple, #5B2D6E); color: #fff;
+  border-radius: 4px; cursor: pointer;
+}
+.stock-badge {
+  position: absolute; top: 8px; right: 8px; z-index: 3;
+  background: rgba(28,26,23,0.75); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 2px 7px; border-radius: 10px;
+}
 /* Admin bar */
 #admin-bar {
   display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
@@ -849,7 +869,7 @@ function renderGrid(type) {
           </div>
           <div class="card-price">${w.price ? '<span class="currency">฿</span>' + w.price.toLocaleString() : '<span style=\'color:var(--ink-muted);font-size:13px\'>—</span>'}</div>
         </div>
-        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button>` : ''}
+        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button><div class="admin-stock-ctrl" onclick="event.stopPropagation()"><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-save-btn" onclick="setStock(${idx},event)">💾</button></div>` : `${stockData[wineKey(w)]?.quantity !== undefined ? '<div class="stock-badge">🍾 ' + stockData[wineKey(w)].quantity + '</div>' : ''}`}
       </div>`;
   }).join("");
 }
@@ -966,6 +986,7 @@ function wineKey(w) { return w.producer + "|" + w.name; }
 // ── Admin mode ────────────────────────────────────────────────────────────────
 let adminMode = false;
 let soldOut = new Set();
+let stockData = {};
 
 // Real-time listener — all devices stay in sync
 soldOutRef.on("value", snapshot => {
@@ -974,6 +995,12 @@ soldOutRef.on("value", snapshot => {
   renderGrid(activeType);
 });
 
+
+const stockRef = db.ref("wineStock");
+stockRef.on("value", snap => {
+  stockData = snap.val() || {};
+  renderGrid(activeType);
+});
 renderGrid("all");
 
 function saveSoldOut() {
@@ -995,6 +1022,24 @@ function toggleSoldOut(idx, e) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ wineName: w.name, producer: w.producer, isSoldOut })
   }).then(r => r.json()).then(d => console.log('[notify]', d)).catch(e => console.error('[notify error]', e));
+}
+
+
+function setStock(idx, e) {
+  e.stopPropagation();
+  const w = wines[idx];
+  const key = wineKey(w);
+  const el = document.getElementById("si-" + idx);
+  const qty = parseInt(el.value);
+  if (isNaN(qty) || qty < 0) return;
+  stockRef.child(key).set({ quantity: qty, name: w.name, producer: w.producer, type: w.type });
+  // Auto-sync sold-out state
+  if (qty === 0 && !soldOut.has(key)) {
+    soldOut.add(key); saveSoldOut();
+  } else if (qty > 0 && soldOut.has(key)) {
+    soldOut.delete(key); saveSoldOut();
+  }
+  renderGrid(activeType);
 }
 
 function enterAdmin() {
