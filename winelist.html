@@ -177,6 +177,18 @@ header {
   background: var(--purple, #5B2D6E); color: #fff;
   border-radius: 4px; cursor: pointer;
 }
+.stock-adj-btn {
+  width: 24px; height: 24px; border: none;
+  background: rgba(255,255,255,0.92); border-radius: 4px;
+  cursor: pointer; font-size: 15px; font-weight: 700; line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18); flex-shrink: 0;
+}
+.stock-count {
+  min-width: 28px; text-align: center; font-size: 12px;
+  font-weight: 700; color: var(--ink, #1c1a17);
+  background: rgba(255,255,255,0.92); border-radius: 4px;
+  padding: 2px 5px; border: 1px solid rgba(0,0,0,0.1);
+}
 .stock-badge {
   position: absolute; top: 8px; right: 8px; z-index: 3;
   background: rgba(28,26,23,0.75); color: #fff;
@@ -869,7 +881,7 @@ function renderGrid(type) {
           </div>
           <div class="card-price">${w.price ? '<span class="currency">฿</span>' + w.price.toLocaleString() : '<span style=\'color:var(--ink-muted);font-size:13px\'>—</span>'}</div>
         </div>
-        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button><div class="admin-stock-ctrl" onclick="event.stopPropagation()"><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-save-btn" onclick="setStock(${idx},event)">💾</button></div>` : `${stockData[wineKey(w)]?.quantity !== undefined ? '<div class="stock-badge">🍾 ' + stockData[wineKey(w)].quantity + '</div>' : ''}`}
+        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button><div class="admin-stock-ctrl" onclick="event.stopPropagation()">${stockData[wineKey(w)]?.quantity !== undefined ? `<button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)">−</button><span class="stock-count">${stockData[wineKey(w)].quantity}</span><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)">+</button>` : ``}<input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-save-btn" onclick="setStock(${idx},event)" title="ตั้งค่าเริ่มต้น">💾</button></div>` : ``}
       </div>`;
   }).join("");
 }
@@ -1025,6 +1037,20 @@ function toggleSoldOut(idx, e) {
 }
 
 
+function adjustStock(idx, delta, e) {
+  e.stopPropagation();
+  const w = wines[idx];
+  const key = wineKey(w);
+  const existing = stockData[key];
+  if (!existing) return;
+  const newQty = Math.max(0, (existing.quantity ?? 0) + delta);
+  const initialStock = existing.initialStock ?? existing.quantity ?? newQty;
+  stockRef.child(key).set({ quantity: newQty, initialStock, name: w.name, producer: w.producer, type: w.type });
+  if (newQty === 0 && !soldOut.has(key)) { soldOut.add(key); saveSoldOut(); }
+  else if (newQty > 0 && soldOut.has(key)) { soldOut.delete(key); saveSoldOut(); }
+  renderGrid(activeType);
+}
+
 function setStock(idx, e) {
   e.stopPropagation();
   const w = wines[idx];
@@ -1032,7 +1058,10 @@ function setStock(idx, e) {
   const el = document.getElementById("si-" + idx);
   const qty = parseInt(el.value);
   if (isNaN(qty) || qty < 0) return;
-  stockRef.child(key).set({ quantity: qty, name: w.name, producer: w.producer, type: w.type });
+  // เก็บ initialStock ครั้งแรกที่ตั้ง, ถ้ามีอยู่แล้วให้คงไว้
+  const existing = stockData[key];
+  const initialStock = existing?.initialStock ?? qty;
+  stockRef.child(key).set({ quantity: qty, initialStock: initialStock, name: w.name, producer: w.producer, type: w.type });
   // Auto-sync sold-out state
   if (qty === 0 && !soldOut.has(key)) {
     soldOut.add(key); saveSoldOut();
