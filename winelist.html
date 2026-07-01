@@ -164,13 +164,14 @@ header {
 }
 .admin-toggle-btn:active { transform: scale(0.88); }
 .admin-stock-ctrl {
-  position: absolute; bottom: 8px; left: 8px; z-index: 4;
-  display: flex; align-items: center; gap: 4px;
+  position: absolute; bottom: 8px; left: 8px; right: 40px; z-index: 4;
+  display: flex; align-items: center; gap: 3px;
 }
 .stock-input {
-  width: 48px; padding: 3px 5px; font-size: 11px;
+  width: 38px; padding: 3px 2px; font-size: 11px;
   border: 1px solid rgba(0,0,0,0.2); border-radius: 4px;
   text-align: center; background: rgba(255,255,255,0.92);
+  flex-shrink: 0;
 }
 .stock-save-btn {
   font-size: 11px; padding: 3px 7px; border: none;
@@ -881,7 +882,7 @@ function renderGrid(type) {
           </div>
           <div class="card-price">${w.price ? '<span class="currency">฿</span>' + w.price.toLocaleString() : '<span style=\'color:var(--ink-muted);font-size:13px\'>—</span>'}</div>
         </div>
-        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button><div class="admin-stock-ctrl" onclick="event.stopPropagation()">${stockData[wineKey(w)]?.quantity !== undefined ? `<button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)">−</button><span class="stock-count">${stockData[wineKey(w)].quantity}</span><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)">+</button>` : ``}<input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-save-btn" onclick="setStock(${idx},event)" title="ตั้งค่าเริ่มต้น">💾</button></div>` : ``}
+        ${adminMode ? `<button class="admin-toggle-btn" onclick="toggleSoldOut(${idx}, event)" title="${isSoldOut ? 'Mark available' : 'Mark sold out'}">${isSoldOut ? '✅' : '🔴'}</button><div class="admin-stock-ctrl" onclick="event.stopPropagation()"><button class="stock-adj-btn" onclick="adjustStock(${idx},-1,event)" ${!stockData[wineKey(w)] ? 'disabled style="opacity:0.3"' : ''}>−</button><input type="number" class="stock-input" id="si-${idx}" min="0" value="${stockData[wineKey(w)]?.quantity ?? ''}" placeholder="qty"><button class="stock-adj-btn" onclick="adjustStock(${idx},1,event)" ${!stockData[wineKey(w)] ? 'disabled style="opacity:0.3"' : ''}>+</button><button class="stock-save-btn" onclick="setStock(${idx},event)" title="บันทึก">💾</button></div>` : ``}
       </div>`;
   }).join("");
 }
