@@ -1034,16 +1034,10 @@ function toggleSoldOut(idx, e) {
 
 function adjustStock(idx, delta, e) {
   e.stopPropagation();
-  const w = wines[idx];
-  const key = stockKey(w);
-  const existing = stockData[key];
-  if (!existing) return;
-  const newQty = Math.max(0, (existing.quantity ?? 0) + delta);
-  const initialStock = existing.initialStock ?? existing.quantity ?? newQty;
-  stockRef.child(stockKey(w)).set({ quantity: newQty, initialStock, name: w.name, producer: w.producer, type: w.type });
-  if (newQty === 0 && !soldOut.has(key)) { soldOut.add(key); saveSoldOut(); }
-  else if (newQty > 0 && soldOut.has(key)) { soldOut.delete(key); saveSoldOut(); }
-  renderGrid(activeType);
+  const btn = e.currentTarget || e.target;
+  const input = btn.parentElement.querySelector('.stock-input');
+  const current = parseInt(input.value) || 0;
+  input.value = Math.max(0, current + delta);
 }
 
 function setStock(idx, btn, e) {
