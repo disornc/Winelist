@@ -1054,12 +1054,19 @@ function exitAdmin() {
   renderGrid(activeType);
 }
 
-// Logo: single click = home, triple-click = admin
+// Logo: single click = home, long-press (2s) = admin
+let logoTimer = null;
+document.getElementById("logo-link").addEventListener("mousedown", (e) => {
+  logoTimer = setTimeout(() => { e.preventDefault(); enterAdmin(); }, 2000);
+});
+document.getElementById("logo-link").addEventListener("touchstart", (e) => {
+  logoTimer = setTimeout(() => { e.preventDefault(); enterAdmin(); }, 2000);
+}, { passive: true });
+document.getElementById("logo-link").addEventListener("mouseup", () => clearTimeout(logoTimer));
+document.getElementById("logo-link").addEventListener("mouseleave", () => clearTimeout(logoTimer));
+document.getElementById("logo-link").addEventListener("touchend", () => clearTimeout(logoTimer));
 document.getElementById("logo-link").addEventListener("click", (e) => {
-  if (e.detail >= 3) {
-    e.preventDefault();
-    enterAdmin();
-  }
+  if (adminMode) e.preventDefault(); // ถ้าเข้า admin แล้ว ไม่ navigate
 });
 
 // ── Food Pairing ──────────────────────────────────────────────────────────
