@@ -106,23 +106,42 @@ module.exports = async function handler(req, res) {
 
     const message = lines.join('\n');
 
-    // ── Send to Discord ──────────────────────────────────────────────────────
+    // ── Send to Discord (split if > 2000 chars) ─────────────────────────────
+    let discordError = null;
     let discordStatus = null;
-    let discordError  = null;
 
     if (!webhookUrl) {
       discordError = "DISCORD_WEBHOOK_URL not set";
     } else {
       try {
-        const dr = await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: message })
-        });
-        discordStatus = dr.status;
-        if (!dr.ok) {
-          const txt = await dr.text();
-          discordError = `Discord ${dr.status}: ${txt}`;
+        // Split message into ≤2000-char chunks at newline boundaries
+        const chunks = [];
+        let chunk = "";
+        for (const line of message.split("\n")) {
+          const add = (chunk ? "\n" : "") + line;
+          if (chunk.length + add.length > 1900) {
+            chunks.push(chunk);
+            chunk = line;
+          } else {
+            chunk += add;
+          }
+        }
+        if (chunk) chunks.push(chunk);
+
+        for (const c of chunks) {
+          const dr = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: c })
+          });
+          discordStatus = dr.status;
+          if (!dr.ok) {
+            const txt = await dr.text();
+            discordError = `Discord ${dr.status}: ${txt}`;
+            break;
+          }
+          // small delay between messages
+          if (chunks.length > 1) await new Promise(r => setTimeout(r, 500));
         }
       } catch (de) {
         discordError = de.message;
