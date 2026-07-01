@@ -49,7 +49,7 @@ module.exports = async function handler(req, res) {
         const soldStr = sold > 0 ? ` *(ขายไป ${sold})*` : "";
 
         if (qty === 0) {
-          outStock.push(`• ${data.producer} — ${data.name}${sold > 0 ? ` *(ขายไป ${sold})*` : ""}`);
+          outStock.push(`• ${data.producer} — ${data.name}${soldStr}`);
         } else if (qty <= 1) {
           if (!lowStock[label]) lowStock[label] = [];
           lowStock[label].push(`• ${data.producer} — ${data.name} — **เหลือ ${qty} btl**${soldStr}`);
@@ -67,7 +67,6 @@ module.exports = async function handler(req, res) {
         }
         lines.push('');
       }
-
       if (Object.keys(lowStock).length > 0) {
         lines.push(`⚠️ **Low Stock (1 btl)**`);
         for (const [type, list] of Object.entries(lowStock)) {
@@ -76,17 +75,16 @@ module.exports = async function handler(req, res) {
         }
         lines.push('');
       }
-
       if (outStock.length > 0) {
         lines.push(`🔴 **Out of Stock (${outStock.length})**`);
         outStock.forEach(l => lines.push(l));
         lines.push('');
       }
 
+      const totalBottlesInit = stockEntries.reduce((s, [, d]) => s + (d.initialStock ?? d.quantity ?? 0), 0);
       lines.push(`📊 **สรุป:** ขายไปทั้งหมด **${totalSold} btl** · เหลือ **${totalBottles} btl** จาก ${stockEntries.length} ไวน์`);
 
     } else if (soldOutKeys.length > 0) {
-      // fallback ถ้ายังไม่ได้ตั้ง stock
       const grouped = {};
       soldOutKeys.forEach(key => {
         const w = wineMap[key];
@@ -108,15 +106,34 @@ module.exports = async function handler(req, res) {
 
     const message = lines.join('\n');
 
-    if (webhookUrl) {
-      await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: message })
-      });
+    // ── Send to Discord ──────────────────────────────────────────────────────
+    let discordStatus = null;
+    let discordError  = null;
+
+    if (!webhookUrl) {
+      discordError = "DISCORD_WEBHOOK_URL not set";
+    } else {
+      try {
+        const dr = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: message })
+        });
+        discordStatus = dr.status;
+        if (!dr.ok) {
+          const txt = await dr.text();
+          discordError = `Discord ${dr.status}: ${txt}`;
+        }
+      } catch (de) {
+        discordError = de.message;
+      }
     }
 
-    res.status(200).json({ ok: true, message });
+    res.status(200).json({
+      ok: true,
+      discord: discordError ? `FAILED — ${discordError}` : `OK (${discordStatus})`,
+      message
+    });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
