@@ -1101,7 +1101,10 @@ function enterAdmin() {
 
 function toggleHideSoldOut() {
     hideSoldOut = !hideSoldOut;
+    const btn = document.getElementById("hide-soldout-btn");
+    if (btn) btn.textContent = hideSoldOut ? "👁️ Show Sold Out" : "🙈 Hide Sold Out";
     db.ref("settings/hideSoldOut").set(hideSoldOut);
+    renderGrid(activeType);
   }
   function exitAdmin() {
   adminMode = false;
