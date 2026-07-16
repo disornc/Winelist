@@ -1096,6 +1096,8 @@ function setStock(idx, btn, e) {
 function enterAdmin() {
   adminMode = true;
   document.getElementById("admin-bar").classList.add("visible");
+  const btn = document.getElementById("hide-soldout-btn");
+  if (btn) btn.textContent = hideSoldOut ? "👁️ Show Sold Out" : "🙈 Hide Sold Out";
   renderGrid(activeType);
 }
 
