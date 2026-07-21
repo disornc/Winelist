@@ -1045,6 +1045,12 @@ stockRef.on("value", snap => {
   stockData = snap.val() || {};
   renderGrid(activeType);
 });
+db.ref("settings/hideSoldOut").on("value", snap => {
+  hideSoldOut = snap.val() === true;
+  const btn = document.getElementById("hide-soldout-btn");
+  if (btn) btn.textContent = hideSoldOut ? "👁️ Show Sold Out" : "🙈 Hide Sold Out";
+  renderGrid(activeType);
+});
 renderGrid("all");
 
 function saveSoldOut() {
