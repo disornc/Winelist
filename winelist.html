@@ -1080,6 +1080,23 @@ soldOutRef.on("value", snapshot => {
 const stockRef = db.ref("wineStock");
 stockRef.on("value", snap => {
   stockData = snap.val() || {};
+  // Auto sold-out: if quantity hits 0, add to soldOut; if restocked, remove
+  let changed = false;
+  wines.forEach(w => {
+    const sk = stockKey(w);
+    const wk = wineKey(w);
+    const entry = stockData[sk];
+    if (entry && typeof entry.quantity === 'number') {
+      if (entry.quantity === 0 && !soldOut.has(wk)) {
+        soldOut.add(wk);
+        changed = true;
+      } else if (entry.quantity > 0 && soldOut.has(wk)) {
+        soldOut.delete(wk);
+        changed = true;
+      }
+    }
+  });
+  if (changed) saveSoldOut();
   renderGrid(activeType);
 });
 db.ref("settings/hideSoldOut").on("value", snap => {
