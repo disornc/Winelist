@@ -7,17 +7,16 @@ module.exports = async function handler(req, res) {
   const dbBase = "https://winelist-6bea7-default-rtdb.firebaseio.com";
 
   try {
-    const [soldOutRes, stockRes] = await Promise.all([
+    const [soldOutRes, stockRes, snapRes] = await Promise.all([
       fetch(`${dbBase}/soldOut.json`),
-      fetch(`${dbBase}/wineStock.json`)
+      fetch(`${dbBase}/wineStock.json`),
+      fetch(`${dbBase}/reportSnapshot.json`)
     ]);
     const soldOutData = await soldOutRes.json();
     const stockData   = (await stockRes.json()) || {};
+    const snapshot    = await snapRes.json(); // { stockKey: quantity } from the previous report
 
-    const soldOutKeys = soldOutData ? Object.values(soldOutData) : [];
-
-    const wineMap = {};
-    wines.forEach(w => { wineMap[`${w.producer}|${w.name}`] = w; });
+    const soldOutKeys = new Set(soldOutData ? Object.values(soldOutData) : []);
 
     const typeLabel = {
       red: "🍷 Red", white: "🥂 White",
@@ -29,82 +28,66 @@ module.exports = async function handler(req, res) {
     });
 
     const lines = [`🍇 **Grapey Daily Report — ${now}**`, ``];
-
     const stockEntries = Object.entries(stockData);
 
-    if (stockEntries.length > 0) {
-      const inStock  = {};
-      const lowStock = {};
-      const outStock = [];
-      let totalBottles = 0;
-      let totalSold    = 0;
+    // Current quantities become the baseline for tomorrow's report
+    const newSnapshot = {};
+    stockEntries.forEach(([key, d]) => { newSnapshot[key] = d.quantity ?? 0; });
+
+    if (!snapshot) {
+      lines.push(`📝 เริ่มบันทึกยอดขายรายวันแล้ว — report พรุ่งนี้จะแสดงไวน์ที่ขายในแต่ละวัน`);
+    } else {
+      const grouped = {};
+      let totalSold = 0;
+      let wineCount = 0;
 
       stockEntries.forEach(([key, data]) => {
-        const qty     = data.quantity ?? 0;
-        const initial = data.initialStock ?? qty;
-        const sold    = initial - qty;
-        totalBottles += qty;
-        totalSold    += sold;
-        const label   = typeLabel[data.type] || "🍾 Other";
-        const soldStr = sold > 0 ? ` *(ขายไป ${sold})*` : "";
+        const qty  = data.quantity ?? 0;
+        const prev = snapshot[key];
+        if (prev === undefined) return;      // wine added today — no baseline yet
+        const sold = prev - qty;
+        if (sold <= 0) return;                // nothing sold (or restocked)
 
-        if (qty === 0) {
-          outStock.push(`• ${data.producer} — ${data.name}${soldStr}`);
-        } else if (qty <= 1) {
-          if (!lowStock[label]) lowStock[label] = [];
-          lowStock[label].push(`• ${data.producer} — ${data.name} — **เหลือ ${qty} btl**${soldStr}`);
-        } else {
-          if (!inStock[label]) inStock[label] = [];
-          inStock[label].push(`• ${data.producer} — ${data.name} — เหลือ ${qty} btl${soldStr}`);
-        }
+        totalSold += sold;
+        wineCount++;
+        const label = typeLabel[data.type] || "🍾 Other";
+        const wk = `${data.producer}|${data.name}`;
+        const isOut = qty === 0 || soldOutKeys.has(wk);
+        if (!grouped[label]) grouped[label] = [];
+        grouped[label].push(
+          `• ${data.producer} — ${data.name} × **${sold}**` + (isOut ? ` 🔴 **หมดแล้ว**` : ``)
+        );
       });
 
-      if (Object.keys(inStock).length > 0) {
-        lines.push(`✅ **In Stock**`);
-        for (const [type, list] of Object.entries(inStock)) {
+      if (wineCount === 0) {
+        lines.push(`วันนี้ยังไม่มีไวน์ขาย`);
+      } else {
+        lines.push(`🛒 **ขายวันนี้**`);
+        for (const [type, list] of Object.entries(grouped)) {
           lines.push(`**${type}**`);
           list.forEach(l => lines.push(l));
         }
         lines.push('');
+        lines.push(`📊 **สรุป:** ขายไป **${totalSold} btl** จาก ${wineCount} ไวน์`);
       }
-      if (Object.keys(lowStock).length > 0) {
-        lines.push(`⚠️ **Low Stock (1 btl)**`);
-        for (const [type, list] of Object.entries(lowStock)) {
-          lines.push(`**${type}**`);
-          list.forEach(l => lines.push(l));
-        }
-        lines.push('');
-      }
-      if (outStock.length > 0) {
-        lines.push(`🔴 **Out of Stock (${outStock.length})**`);
-        outStock.forEach(l => lines.push(l));
-        lines.push('');
-      }
-
-      const totalBottlesInit = stockEntries.reduce((s, [, d]) => s + (d.initialStock ?? d.quantity ?? 0), 0);
-      lines.push(`📊 **สรุป:** ขายไปทั้งหมด **${totalSold} btl** · เหลือ **${totalBottles} btl** จาก ${stockEntries.length} ไวน์`);
-
-    } else if (soldOutKeys.length > 0) {
-      const grouped = {};
-      soldOutKeys.forEach(key => {
-        const w = wineMap[key];
-        if (!w) return;
-        const type = typeLabel[w.type] || "🍾 Other";
-        if (!grouped[type]) grouped[type] = [];
-        grouped[type].push(`• ${w.producer} — ${w.name}`);
-      });
-      lines.push(`🔴 **Sold Out (${soldOutKeys.length})**`);
-      for (const [type, list] of Object.entries(grouped)) {
-        lines.push(`**${type}**`);
-        list.forEach(l => lines.push(l));
-      }
-      lines.push('');
-      lines.push(`_ยังไม่ได้ตั้ง stock — เข้า admin mode แล้วใส่จำนวนขวดแต่ละไวน์เพื่อดู report เต็ม_`);
-    } else {
-      lines.push(`✅ ไม่มีไวน์ Sold Out — ครบทุกขวด 🍷`);
     }
 
     const message = lines.join('\n');
+
+    // Save today's quantities for tomorrow's comparison
+    let snapshotError = null;
+    if (stockEntries.length > 0) {
+      try {
+        const sr = await fetch(`${dbBase}/reportSnapshot.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newSnapshot)
+        });
+        if (!sr.ok) snapshotError = `Firebase ${sr.status}`;
+      } catch (se) {
+        snapshotError = se.message;
+      }
+    }
 
     // ── Send to Discord (split if > 2000 chars) ─────────────────────────────
     let discordError = null;
@@ -114,7 +97,6 @@ module.exports = async function handler(req, res) {
       discordError = "DISCORD_WEBHOOK_URL not set";
     } else {
       try {
-        // Split message into ≤2000-char chunks at newline boundaries
         const chunks = [];
         let chunk = "";
         for (const line of message.split("\n")) {
@@ -140,7 +122,6 @@ module.exports = async function handler(req, res) {
             discordError = `Discord ${dr.status}: ${txt}`;
             break;
           }
-          // small delay between messages
           if (chunks.length > 1) await new Promise(r => setTimeout(r, 500));
         }
       } catch (de) {
@@ -151,6 +132,7 @@ module.exports = async function handler(req, res) {
     res.status(200).json({
       ok: true,
       discord: discordError ? `FAILED — ${discordError}` : `OK (${discordStatus})`,
+      snapshot: snapshotError ? `FAILED — ${snapshotError}` : "saved",
       message
     });
   } catch (e) {
